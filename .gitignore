@@ -1,2 +1,13 @@
 .idea
+**/target/
+.venv-parser/
+__pycache__/
+*.py[cod]
+.runtime/
+experiments/parser-benchmark/tmp/
+experiments/parser-benchmark/results/ocr-paddleocr/model-cache/
+experiments/parser-benchmark/results/ocr-ppstructure/model-cache/
+experiments/parser-benchmark/results/ocr-easyocr/model-cache/
+experiments/parser-benchmark/results/ocr-ppstructure-v3/model-cache/
+experiments/retrieval-benchmark/models/bge-small-zh-v1.5/model.safetensors
 
