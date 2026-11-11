@@ -1,0 +1,398 @@
+{
+  "experiment_id": "TECH-MDOC-011-R02",
+  "scope": "multi-document synthetic QA through official Codex CLI/Responses in groups",
+  "data_sent": "project-authored synthetic evidence only; restricted evidence excluded from cloud route",
+  "configuration": {
+    "wire_api": "Responses through official Codex provider",
+    "reasoning_effort": "low",
+    "group_size": 3,
+    "timeout_seconds": 60.0
+  },
+  "providers": [
+    {
+      "provider": "codex_official_cli_multidoc_grouped",
+      "model": "gpt-5.5",
+      "query_count": 6,
+      "completed_query_count": 0,
+      "transport_error_count": 6,
+      "status_accuracy": null,
+      "json_valid_rate": 0,
+      "citation_id_retrieval_rate": null,
+      "refusal_or_review_accuracy": null,
+      "batch_latency_ms": {
+        "p50": 65.906,
+        "p95": 79.369
+      },
+      "rows": [
+        {
+          "id": "M01",
+          "type": "authorized_search",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "DOC-A-v1-1-1",
+            "DOC-A-v1-2-1",
+            "DOC-B-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 52.444,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M02",
+          "type": "unauthorized_only",
+          "expected_status": "refused",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 0.0,
+          "elapsed_ms": 52.444,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M03",
+          "type": "conflict",
+          "expected_status": "needs_human_review",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "CONFLICT-A-v1-1-1",
+            "CONFLICT-B-v2-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 52.444,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M04",
+          "type": "version",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "VERSIONED-v1-1-1",
+            "VERSIONED-v2-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 79.369,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M05",
+          "type": "sensitivity",
+          "expected_status": "refused",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "PUBLIC-01-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 0.0,
+          "elapsed_ms": 79.369,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M06",
+          "type": "same_name",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "DUP-A-v1-1-1",
+            "DUP-B-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 79.369,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        }
+      ]
+    },
+    {
+      "provider": "codex_official_cli_multidoc_grouped",
+      "model": "gpt-5.6-sol",
+      "query_count": 6,
+      "completed_query_count": 0,
+      "transport_error_count": 6,
+      "status_accuracy": null,
+      "json_valid_rate": 0,
+      "citation_id_retrieval_rate": null,
+      "refusal_or_review_accuracy": null,
+      "batch_latency_ms": {
+        "p50": 78.238,
+        "p95": 89.195
+      },
+      "rows": [
+        {
+          "id": "M01",
+          "type": "authorized_search",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "DOC-A-v1-1-1",
+            "DOC-A-v1-2-1",
+            "DOC-B-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 89.195,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M02",
+          "type": "unauthorized_only",
+          "expected_status": "refused",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 0.0,
+          "elapsed_ms": 89.195,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M03",
+          "type": "conflict",
+          "expected_status": "needs_human_review",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "CONFLICT-A-v1-1-1",
+            "CONFLICT-B-v2-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 89.195,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M04",
+          "type": "version",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "VERSIONED-v1-1-1",
+            "VERSIONED-v2-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 67.281,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M05",
+          "type": "sensitivity",
+          "expected_status": "refused",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "PUBLIC-01-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 0.0,
+          "elapsed_ms": 67.281,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M06",
+          "type": "same_name",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "DUP-A-v1-1-1",
+            "DUP-B-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 67.281,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        }
+      ]
+    },
+    {
+      "provider": "codex_official_cli_multidoc_grouped",
+      "model": "gpt-5.6-luna",
+      "query_count": 6,
+      "completed_query_count": 0,
+      "transport_error_count": 6,
+      "status_accuracy": null,
+      "json_valid_rate": 0,
+      "citation_id_retrieval_rate": null,
+      "refusal_or_review_accuracy": null,
+      "batch_latency_ms": {
+        "p50": 128.475,
+        "p95": 136.078
+      },
+      "rows": [
+        {
+          "id": "M01",
+          "type": "authorized_search",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "DOC-A-v1-1-1",
+            "DOC-A-v1-2-1",
+            "DOC-B-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 120.871,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M02",
+          "type": "unauthorized_only",
+          "expected_status": "refused",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 0.0,
+          "elapsed_ms": 120.871,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M03",
+          "type": "conflict",
+          "expected_status": "needs_human_review",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "CONFLICT-A-v1-1-1",
+            "CONFLICT-B-v2-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 120.871,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M04",
+          "type": "version",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "VERSIONED-v1-1-1",
+            "VERSIONED-v2-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 136.078,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M05",
+          "type": "sensitivity",
+          "expected_status": "refused",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "PUBLIC-01-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 0.0,
+          "elapsed_ms": 136.078,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        },
+        {
+          "id": "M06",
+          "type": "same_name",
+          "expected_status": "answered",
+          "actual_status": null,
+          "status_correct": false,
+          "json_valid": false,
+          "parse_note": null,
+          "retrieved_evidence": [
+            "DUP-A-v1-1-1",
+            "DUP-B-v1-1-1"
+          ],
+          "cited_evidence": [],
+          "citation_ids_in_retrieved": true,
+          "gold_coverage": 1.0,
+          "elapsed_ms": 136.078,
+          "error": "CLI_EXIT_1: WARNING: proceeding, even though we could not create PATH aliases: Could not find home directory\nError finding codex home: Could not find home directory\n",
+          "parsed_response": null
+        }
+      ]
+    }
+  ],
+  "boundary": "Grouped CLI latency includes official client startup and relay overhead. This is not a cloud price or production SLA measurement."
+}
