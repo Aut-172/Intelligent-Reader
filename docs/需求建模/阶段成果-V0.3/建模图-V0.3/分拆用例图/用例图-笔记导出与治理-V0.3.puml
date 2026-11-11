@@ -1,0 +1,43 @@
+@startuml
+title 智能阅读器需求模型 V0.3｜用例图·笔记、导出与治理
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam usecase {
+  BackgroundColor #EAF3F8
+  BorderColor #1F4E78
+  ArrowColor #1F4E78
+}
+actor "阅读者\nReader" as Reader
+actor "工作区所有者" as Owner
+actor "导出/通知目标" as Target
+rectangle "智能阅读器｜笔记、导出与治理" {
+  usecase "创建批注/笔记" as UC09
+  usecase "导出阅读成果" as UC10
+  usecase "配置模型与隐私边界" as UC11
+  usecase "查看处理/核验通知" as UC12
+  usecase "执行源文件差分检查" as Diff
+  usecase "记录审计事件" as Audit
+}
+Reader --> UC09
+Reader --> UC10
+Reader --> UC12
+Owner --> UC11
+Target --> UC10
+UC10 ..> Diff : <<include>>
+UC10 ..> Audit : <<include>>
+UC11 ..> Audit : <<include>>
+UC12 ..> Audit : <<include>>
+note right of UC09
+  笔记保留来源文档、版本、
+  原文位置和回答/引用关联。
+end note
+legend right
+  覆盖：FR-07 至 FR-10
+  规则：BR09、BR10、BR11、BR12、BR14、BR15
+  PermissionGrant：访问授权
+  Policy：外发与生成条件
+  AuditEvent：不可篡改的留痕
+endlegend
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title 智能阅读器需求模型 V0.3｜用例图·文档与阅读
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam usecase {
+  BackgroundColor #EAF3F8
+  BorderColor #1F4E78
+  ArrowColor #1F4E78
+}
+actor "阅读者\nReader" as Reader
+actor "本地解析/OCR" as Parser
+actor "系统通知" as Notify
+rectangle "智能阅读器｜文档与阅读" {
+  usecase "导入文档" as UC01
+  usecase "处理并索引文档" as UC02
+  usecase "管理文档空间" as UC03
+  usecase "在线/离线阅读\n文档与目录" as UC04
+  usecase "查看处理/核验通知" as UC12
+}
+Reader --> UC01
+Reader --> UC03
+Reader --> UC04
+Reader --> UC12
+Parser --> UC02
+Notify --> UC12
+UC01 ..> UC02 : <<include>>
+note right of UC01
+  导入后必经处理与索引。
+  低置信、格式失败和撤权
+  分支见活动图与状态图。
+end note
+legend right
+  覆盖：FR-01、FR-02、FR-10
+  规则：BR06、BR07、BR11、BR14、BR15
+endlegend
+@enduml

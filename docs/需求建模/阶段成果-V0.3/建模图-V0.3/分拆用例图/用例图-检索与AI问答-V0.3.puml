@@ -1,0 +1,50 @@
+@startuml
+title 智能阅读器需求模型 V0.3｜用例图·检索与 AI 问答
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam usecase {
+  BackgroundColor #EAF3F8
+  BorderColor #1F4E78
+  ArrowColor #1F4E78
+}
+actor "阅读者\nReader" as Reader
+actor "工作区所有者" as Owner
+actor "云端模型服务" as Model
+rectangle "智能阅读器｜检索与问答" {
+  usecase "全文/语义/模糊检索" as UC05
+  usecase "对文档或选中文本提问" as UC06
+  usecase "生成摘要/要点" as UC07
+  usecase "核验回答引用" as UC08
+  usecase "确认本次外发文件" as UploadConfirm
+  usecase "执行权限与证据门控" as Gate
+  usecase "执行引用校验" as Cite
+  usecase "原文/检索/人工复核降级" as Fallback
+}
+Reader --> UC05
+Reader --> UC06
+Reader --> UC07
+Reader --> UC08
+Owner --> Gate
+Model --> UC06
+Model --> UC07
+UC06 ..> Gate : <<include>>
+UC07 ..> Gate : <<include>>
+UC06 ..> Cite : <<include>>
+UC07 ..> Cite : <<include>>
+UC06 ..> UploadConfirm : <<include>>
+UC07 ..> UploadConfirm : <<include>>
+UC06 ..> Fallback : <<extend>>
+UC07 ..> Fallback : <<extend>>
+UC08 ..> UC06 : <<extend>>
+UC08 ..> UC07 : <<extend>>
+note right of Gate
+  先做权限过滤，再判断
+  证据契约和外发许可。
+end note
+legend right
+  覆盖：FR-03 至 FR-06、FR-09
+  规则：BR01 至 BR05、BR08、BR12、BR13
+endlegend
+@enduml
