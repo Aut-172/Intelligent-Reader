@@ -1,0 +1,78 @@
+@startuml
+top to bottom direction
+hide circle
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 17
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFF9F0
+  BorderColor #B97824
+  ArrowColor #4B6075
+  FontColor #1F2937
+  HeaderBackgroundColor #B97824
+  HeaderFontColor white
+}
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 52
+
+class User {
+  + user_id
+  --
+  + createNote()
+  + exportResult()
+}
+class Note {
+  + type / body / tags
+  + stale
+  --
+  + bindVersion()
+}
+class ContentBlock {
+  + text
+  + bbox
+  --
+  + locate()
+}
+class DocumentVersion {
+  + source_hash
+  + stale
+  --
+  + markStale()
+}
+class Answer {
+  + status
+  + needs_review
+  --
+  + addClaim()
+}
+class ExportJob {
+  + format / target_path
+  + status
+  --
+  + verifySource()
+}
+class AuditEvent {
+  + event_type / resource_ref
+  + occurred_at
+  --
+  + record()
+}
+
+User --> Note
+Note --> ContentBlock
+Note --> DocumentVersion
+Note --> Answer
+User --> ExportJob
+ExportJob --> Note
+ExportJob --> AuditEvent
+DocumentVersion ..> Note
+
+User -[hidden]right- Note
+Note -[hidden]right- ContentBlock
+ContentBlock -[hidden]right- DocumentVersion
+Answer -[hidden]right- ExportJob
+ExportJob -[hidden]right- AuditEvent
+@enduml

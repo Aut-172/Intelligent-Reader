@@ -1,0 +1,46 @@
+@startuml
+hide footbox
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 18
+skinparam sequenceParticipantFontSize 18
+skinparam sequenceMessageFontSize 17
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceGroupFontSize 17
+skinparam ParticipantPadding 28
+skinparam BoxPadding 12
+skinparam ArrowColor #31546F
+skinparam LifeLineBorderColor #7A91A5
+skinparam ParticipantBorderColor #1F4E78
+skinparam ParticipantBackgroundColor #EAF2F8
+skinparam ActorBorderColor #1F4E78
+skinparam ActorBackgroundColor #FFFFFF
+autonumber
+
+actor 用户 as User
+boundary "导入界面" as UI
+control "导入协调器" as Coordinator
+control "权限校验" as Gate
+control "解析服务" as Parser
+control "索引服务" as Indexer
+database "文档仓库" as Repo
+
+User -> UI : 选择文件并确认导入
+UI -> Coordinator : 提交文件、目标空间与授权选择
+Coordinator -> Gate : 校验文件类型、空间权限与外发授权
+
+alt 校验失败
+  Gate --> UI : 返回原因，不创建文档版本
+  UI --> User : 显示可操作的错误提示
+else 校验通过
+  Gate --> Coordinator : 返回允许的处理路径
+  Coordinator -> Repo : 登记Document与DocumentVersion
+  Coordinator -> Parser : 异步解析指定版本
+  Parser -> Repo : 保存Page、ContentBlock与低置信警告
+  Parser -> Indexer : 请求为同一版本建立索引
+  Indexer -> Repo : 保存Index与构建状态
+  Repo --> UI : 返回解析、索引和警告状态
+  UI --> User : 显示就绪或需复核
+end
+@enduml

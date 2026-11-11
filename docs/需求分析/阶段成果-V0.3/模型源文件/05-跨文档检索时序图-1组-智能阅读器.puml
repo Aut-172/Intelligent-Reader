@@ -1,0 +1,52 @@
+@startuml
+title 授权文档集检索时序图 作业3 V0.1
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam sequenceMessageAlign center
+autonumber
+
+actor "阅读者" as Reader
+boundary "搜索界面" as UI
+control "文档集控制器" as SetController
+database "文档仓库" as Repo
+control "权限服务" as Permission
+control "检索服务" as Search
+database "全文索引" as FullText
+database "向量索引" as Vector
+control "结果融合器" as Ranker
+control "证据装配器" as Assembler
+
+Reader -> UI : 显式选择多份文档并输入检索问题
+UI -> SetController : createOrLoadSet(selectedVersionIds)
+SetController -> Repo : verifyCurrentVersions(versionIds)
+Repo --> SetController : current/stale status
+SetController -> Permission : filterReadable(user, currentVersions)
+Permission --> SetController : authorizedVersions
+
+alt 授权集合为空
+  SetController --> UI : empty(无可检索文档)
+else 至少一个授权版本
+  SetController -> Search : search(query, authorizedVersions)
+  par 全文检索
+    Search -> FullText : keywordSearch(query, scope)
+    FullText --> Search : lexicalHits
+  else 语义检索
+    Search -> Vector : vectorSearch(query, scope)
+    Vector --> Search : semanticHits
+  end
+  Search -> Ranker : mergeAndDeduplicate(hits)
+  Ranker --> Search : rankedHits
+  Search -> Assembler : attachSourceVersionTimeConflict(rankedHits)
+  Assembler -> Repo : loadLocatorsAndSnippets(blockIds)
+  Repo --> Assembler : sourceMetadata
+  alt 无有效命中
+    Assembler --> UI : noResult(建议调整范围或关键词)
+  else 有效命中
+    Assembler --> UI : groupedResults(文档、版本、页/章节、原文片段、冲突标记)
+    Reader -> UI : 点击结果
+    UI -> Repo : openExactVersionAndLocator(result)
+    Repo --> UI : 原文跳转与高亮
+  end
+end
+@enduml
+

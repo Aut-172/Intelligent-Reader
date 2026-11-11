@@ -1,0 +1,44 @@
+@startuml
+hide footbox
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 18
+skinparam sequenceParticipantFontSize 18
+skinparam sequenceMessageFontSize 17
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceGroupFontSize 17
+skinparam ParticipantPadding 30
+skinparam BoxPadding 12
+skinparam ArrowColor #6E512E
+skinparam LifeLineBorderColor #9D835F
+skinparam ParticipantBorderColor #B97824
+skinparam ParticipantBackgroundColor #FFF5E7
+skinparam ActorBorderColor #B97824
+skinparam ActorBackgroundColor #FFFFFF
+autonumber
+
+actor 用户 as User
+boundary "笔记界面" as UI
+control "笔记服务" as Notes
+control "原文定位器" as Locator
+database "笔记仓库" as Repo
+control "审计服务" as Audit
+
+User -> UI : 从原文或回答创建笔记
+UI -> Notes : 提交正文、标签和来源引用
+Notes -> Locator : 核验文档版本与原文锚点
+
+alt 锚点有效
+  Locator --> Notes : 返回版本、页码、段落与字符范围
+else 定位漂移或版本变化
+  Locator --> Notes : 返回stale及需复核原因
+end
+
+Notes -> Repo : 保存Note、来源版本和锚点状态
+Repo --> Notes : 返回note_id
+Notes -> Audit : 记录创建者、来源与保存结果
+Audit --> Notes : 确认留痕
+Notes --> UI : 返回已保存或需复核状态
+UI --> User : 保留笔记内容并提示来源状态
+@enduml

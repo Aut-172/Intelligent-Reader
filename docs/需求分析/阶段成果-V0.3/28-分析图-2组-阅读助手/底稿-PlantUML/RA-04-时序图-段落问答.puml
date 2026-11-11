@@ -1,0 +1,58 @@
+@startuml
+title 图 RA-04　时序图·段落问答与引用校验（UC06、UC08 的对象交互）
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "Reader\n阅读者" as P1
+boundary "ReaderUI\n阅读工作台" as P2
+control "QAController\n问答控制器" as P3
+control "PolicyGate\n权限与证据门控" as P4
+control "EvidenceAssembler\n证据组装" as P5
+boundary "ConsentDialog\n外发确认" as P6
+participant "ModelAdapter\n模型适配器" as P7
+control "CitationVerifier\n引用校验" as P8
+entity "AuditEvent\n审计事件" as P9
+entity "Query\n查询" as P10
+entity "Evidence\n证据" as P11
+entity "Answer\n回答" as P12
+entity "Citation\n引用" as P13
+
+P1 -> P2 : 选中段落并提交问题
+P2 -> P3 : ask(selection, question)
+P3 -> P10 : create(text, scope)
+P3 -> P4 : check(query)
+P4 -> P5 : 请求授权范围内候选证据
+P5 -> P11 : build(blocks)
+P11 --> P5 : Evidence Contract（完整/不足）
+alt [证据覆盖不足]
+  P4 --> P3 : needs_human_review
+  P3 --> P2 : 提示补充范围或读原文
+end
+P4 --> P3 : 门控通过 + 拟外发清单
+P3 -> P6 : requestConsent(files, service, purpose)
+P6 --> P1 : 逐文件展示范围、服务与用途
+P1 --> P6 : 本次确认 / 拒绝
+alt [拒绝或策略禁止云端]
+  P6 --> P3 : rejected
+  P3 --> P2 : local_evidence_only（本地证据/原文）
+end
+P6 -> P9 : record(decision, policy_version)
+P3 -> P7 : generate(evidenceContract)
+P7 --> P3 : AnswerSchema(claims, citations)
+P3 -> P12 : create(status)
+P3 -> P8 : verify(claims, allowList)
+P8 -> P13 : resolve(evidence_id, quote, page)
+alt [引用越界 / quote 不匹配 / 定位失败]
+  P8 --> P3 : citation_invalid（标记失效）
+end
+P8 --> P3 : citation_checked（逐条 support_status）
+P3 -> P12 : markAnswered()
+P3 --> P2 : 带引用回答 + 跳转核验入口
+opt [模型超时或失败]
+  P3 --> P2 : model_failed + 原文/检索结果
+end
+opt [无依据]
+  P3 --> P2 : refused（无法确认）
+end
+@enduml

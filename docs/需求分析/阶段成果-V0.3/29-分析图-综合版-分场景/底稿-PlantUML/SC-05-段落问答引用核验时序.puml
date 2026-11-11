@@ -1,0 +1,46 @@
+@startuml
+hide footbox
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 18
+skinparam sequenceParticipantFontSize 18
+skinparam sequenceMessageFontSize 17
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceGroupFontSize 17
+skinparam ParticipantPadding 28
+skinparam BoxPadding 12
+skinparam ArrowColor #31546F
+skinparam LifeLineBorderColor #7A91A5
+skinparam ParticipantBorderColor #287A78
+skinparam ParticipantBackgroundColor #EAF7F6
+skinparam ActorBorderColor #287A78
+skinparam ActorBackgroundColor #FFFFFF
+autonumber
+
+actor 用户 as User
+boundary "阅读与问答界面" as UI
+control "问答编排器" as QA
+control "权限校验" as Gate
+control "检索服务" as Retrieval
+control "模型网关" as Model
+control "引用核验器" as Verifier
+
+User -> UI : 提交问题并选择选区、章节或全文
+UI -> QA : 提交问题与文档范围
+QA -> Gate : 过滤无权访问的文档版本
+Gate --> QA : 返回授权范围
+QA -> Retrieval : 检索证据并保留页码与段落定位
+Retrieval --> QA : 返回Evidence允许列表
+
+alt 没有足够证据
+  QA --> UI : 返回无依据拒答
+else 证据满足阈值
+  QA -> Model : 仅携带允许证据生成结构化回答
+  Model --> QA : 返回Answer、Claim与Citation
+  QA -> Verifier : 校验每条引用的页码、摘录与定位
+  Verifier --> QA : 返回有效引用与需复核项
+  QA --> UI : 展示回答、引用徽章和原文回跳
+end
+UI --> User : 点击引用后高亮对应原文
+@enduml

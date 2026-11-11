@@ -1,0 +1,53 @@
+@startuml
+title 图 RA-03　时序图·文档导入与解析（UC01、UC02 的对象交互）
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "Reader\n阅读者" as P1
+boundary "ImportUI\n导入界面" as P2
+control "ImportCoordinator\n导入协调器" as P3
+control "DocumentStore\n文档存储" as P4
+control "ParseTaskService\n任务服务" as P5
+participant "LocalParser\n本地解析/OCR" as P6
+control "IndexService\n索引服务" as P7
+entity "Document\n文档" as P8
+entity "DocumentVersion\n版本" as P9
+entity "ParseRun\n解析运行" as P10
+entity "ContentBlock\n内容块" as P11
+entity "Index\n索引" as P12
+
+P1 -> P2 : 选择文件（显式多选）
+P2 -> P3 : importFiles(paths)
+P3 -> P4 : 校验格式与访问权限
+P4 --> P3 : 允许 / 拒绝
+alt [格式不支持或权限不足]
+  P3 --> P2 : 明确原因；不读入其他文件
+  P2 --> P1 : 提示（不创建版本）
+end
+P3 -> P8 : register(meta)
+P8 -> P9 : createVersion(source_hash)
+alt [source_hash 已有有效版本]
+  P9 --> P3 : 复用既有 version_id
+end
+P3 -> P5 : enqueue(version_id)
+P5 -> P10 : start(parser_version, config_hash)
+P10 --> P2 : queued / processing（可查）
+P5 -> P6 : parse(version_id)
+P6 --> P5 : IR(pages, blocks, confidence)
+P5 -> P11 : create(text, section_path, bbox, conf)
+P5 -> P10 : complete(warnings) → parsed
+alt [低置信 OCR 或结构不确定]
+  P5 -> P10 : needsReview(reason)
+  P10 --> P2 : needs_review + 保留原页
+end
+P5 -> P7 : buildIndex(version_id, scope)
+P7 -> P12 : create(version_id, index_type)
+P12 -> P11 : 建立索引条目
+P7 --> P5 : indexed / build_failed
+P5 --> P2 : 处理完成 / 失败通知
+P2 --> P1 : 状态、进度、警告与错误码
+opt [解析失败]
+  P10 -> P10 : failed + 错误码/重试次数
+end
+@enduml

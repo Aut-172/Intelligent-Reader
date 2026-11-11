@@ -1,0 +1,75 @@
+@startuml
+top to bottom direction
+hide circle
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 17
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #F7FAFC
+  BorderColor #2F75B5
+  ArrowColor #4B6075
+  FontColor #1F2937
+  HeaderBackgroundColor #1F4E78
+  HeaderFontColor white
+}
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 52
+
+class Document {
+  + title / format
+  + authorization_status
+  --
+  + registerVersion()
+}
+class DocumentVersion {
+  + source_hash
+  + imported_at / stale
+  --
+  + markStale()
+}
+class ParseRun {
+  + parser_version / status
+  + warnings
+  --
+  + complete()
+}
+class Page {
+  + physical_page / label
+  --
+  + locatorFor(offset)
+}
+class ContentBlock {
+  + text / section_path
+  + bbox / confidence
+  --
+  + locate()
+}
+class Index {
+  + index_type / build_status
+  + stale
+  --
+  + search(query)
+}
+class PermissionGrant {
+  + subject / resource
+  + action
+  --
+  + allows(action)
+}
+
+Document *-- DocumentVersion
+DocumentVersion *-- ParseRun
+DocumentVersion *-- Page
+Page *-- ContentBlock
+ContentBlock --> Index
+PermissionGrant ..> DocumentVersion
+
+Document -[hidden]right- DocumentVersion
+DocumentVersion -[hidden]right- ParseRun
+PermissionGrant -[hidden]right- Page
+Page -[hidden]right- ContentBlock
+ContentBlock -[hidden]right- Index
+@enduml

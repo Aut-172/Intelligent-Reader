@@ -1,0 +1,45 @@
+@startuml
+title 图 RA-05　时序图·跨文档检索（UC05 的对象交互）
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "Reader\n阅读者" as P1
+boundary "SearchUI\n检索界面" as P2
+control "SearchController\n检索控制器" as P3
+control "PermissionFilter\n权限过滤" as P4
+control "RetrievalService\n检索服务" as P5
+control "FullTextIndex\n全文索引" as P6
+control "VectorIndex\n向量索引" as P7
+entity "DocumentSet\n文档集合" as P8
+entity "Query\n查询" as P9
+entity "Evidence\n证据" as P10
+entity "ContentBlock\n内容块" as P11
+
+P1 -> P2 : 输入检索词，显式选择授权文档集
+P2 -> P3 : search(keyword, scope)
+P3 -> P8 : validate(scope)（非系统推定）
+P3 -> P4 : filter(subject, scope)（先于排序/缓存）
+P4 --> P3 : 授权块集合 / 空集
+alt [权限过滤后为空]
+  P3 --> P2 : 无答案 + 提示调整范围（不回退全库）
+  P2 --> P1 : 原文阅读或调整范围
+end
+P3 -> P9 : create(retrieval)
+P3 -> P5 : retrieve(keyword, authorizedBlocks)
+P5 -> P6 : search(keyword)
+P5 -> P7 : similar(query)
+alt [向量索引不可用]
+  P5 --> P3 : 仅全文检索（明确提示）
+end
+P6 --> P5 : 命中块（全文）
+P7 --> P5 : 命中块（语义）
+P5 -> P10 : build(blocks)（按来源分组）
+P10 -> P11 : locator(block_id, page, bbox)
+P10 --> P3 : 结果组（来源、版本、页码、片段）
+alt [来源版本变化或已撤权]
+  P3 --> P2 : 该来源标记 stale
+end
+P3 --> P2 : 分组结果 + 冲突标记（BR08）
+P2 --> P1 : 来源/版本/页码/片段 + 跳转与提问入口
+@enduml

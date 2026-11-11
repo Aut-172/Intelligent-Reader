@@ -1,0 +1,42 @@
+@startuml
+title 图 RA-06　时序图·笔记保存（UC09 的对象交互）
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "Reader\n阅读者" as P1
+boundary "NotesUI\n笔记界面" as P2
+control "NoteController\n笔记控制器" as P3
+control "Locator\n版本定位器" as P4
+entity "Note\n笔记/批注" as P5
+entity "ContentBlock\n内容块" as P6
+entity "DocumentVersion\n版本" as P7
+entity "Answer\n回答" as P8
+entity "Citation\n引用" as P9
+entity "AuditEvent\n审计事件" as P10
+
+P1 -> P2 : 选中文本/回答/引用，保存笔记
+P2 -> P3 : createNote(anchor, body, tags)
+P3 -> P4 : resolveAnchor(anchor)
+P4 -> P7 : checkCurrent(version_id)
+P4 -> P6 : locate(block_id, char_range)
+alt [原文版本已变化]
+  P4 --> P3 : stale（保留锚点）
+end
+alt [定位漂移或 block_id 不存在]
+  P4 --> P3 : locator_failed（保留笔记文字）
+end
+P3 -> P5 : create(user_id, version_id, body, tags)
+P5 -> P7 : bind(version_id)（绑定版本而非文档）
+P5 -> P6 : anchor(block_id, char_range)
+opt [从回答或引用创建]
+  P5 -> P8 : link(answer_id)
+  P5 -> P9 : link(citation_id)
+end
+P3 -> P5 : save()
+P3 -> P10 : record(note_created)
+P3 --> P2 : 保存结果 + 回溯入口
+opt [版本失效]
+  P2 --> P1 : 提示“关联已失效，请复核”
+end
+@enduml

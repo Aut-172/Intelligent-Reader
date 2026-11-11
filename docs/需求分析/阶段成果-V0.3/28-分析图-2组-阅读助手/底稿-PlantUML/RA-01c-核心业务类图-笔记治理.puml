@@ -1,0 +1,77 @@
+@startuml
+title 图 RA-01c 核心业务类图（三）· 笔记、导出与治理
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+class "User" as User <<引用>> {
+}
+class "Answer" as Answer <<引用>> {
+}
+class "ContentBlock" as ContentBlock <<引用>> {
+}
+class "Citation" as Citation <<引用>> {
+}
+class "DocumentVersion" as DocumentVersion <<引用>> {
+}
+class "ParseRun" as ParseRun <<引用>> {
+}
+class "Note" as Note {
+  + note_id
+  + type
+  + body
+  + tags
+  --
+  + create(anchor)
+  + bindVersion(v)
+  + markStale()
+}
+class "ExportJob" as ExportJob {
+  + job_id
+  + format
+  + scope
+  + target_path
+  + status
+  + error
+  --
+  + create()
+  + write()
+  + verifySource()
+}
+class "Notification" as Notification {
+  + notification_id
+  + type
+  + resource_ref
+  + created_at
+  + read
+  --
+  + notify()
+  + markRead()
+  + dedupeKey()
+}
+class "AuditEvent" as AuditEvent {
+  + event_id
+  + event_type
+  + actor
+  + resource_ref
+  + occurred_at
+  --
+  + record()
+  + appendOnly()
+}
+
+User "1" -- "0..*" Note : 创建
+Note "0..*" --> "0..1" ContentBlock : 锚点
+Note "0..*" --> "0..1" Answer : 来源
+Note "0..*" --> "1" DocumentVersion : 绑定版本
+User "1" -- "0..*" ExportJob : 发起
+ExportJob "0..*" --> "0..*" Note : 导出
+ExportJob "1" --> "0..*" Citation : 引用
+User "1" -- "0..*" Notification : 接收
+Notification "0..*" --> "0..1" Answer : 提醒
+Notification "0..*" --> "0..1" ParseRun : 处理状态
+User "1" -- "0..*" AuditEvent : 触发
+AuditEvent "0..*" --> "0..1" Answer : 留痕
+AuditEvent "0..*" --> "0..1" ExportJob : 留痕
+@enduml

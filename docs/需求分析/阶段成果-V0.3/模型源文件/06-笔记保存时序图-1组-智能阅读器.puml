@@ -1,0 +1,44 @@
+@startuml
+title 笔记保存时序图 作业3 V0.1
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam sequenceMessageAlign center
+autonumber
+
+actor "阅读者" as Reader
+boundary "阅读与笔记界面" as UI
+control "笔记控制器" as NoteController
+control "版本服务" as Version
+control "引用服务" as CitationService
+database "笔记仓库" as NoteRepo
+control "标签服务" as TagService
+control "审计服务" as Audit
+
+Reader -> UI : 选择原文、回答或引用并编辑笔记
+UI -> NoteController : saveNote(body, sourceRef, tags)
+NoteController -> Version : verifyCurrent(sourceRef.versionId)
+
+alt 来源版本过期、删除或已撤权
+  Version --> NoteController : stale(reason)
+  NoteController --> UI : 提示重新定位、仅保存为未绑定草稿或取消
+  alt 用户选择未绑定草稿
+    Reader -> UI : 确认保存草稿
+    UI -> NoteController : saveDraft(body, tags)
+    NoteController -> NoteRepo : create NoteCard(sourceStatus=unbound)
+    NoteRepo --> NoteController : noteId
+  end
+else 来源有效
+  Version --> NoteController : current
+  NoteController -> CitationService : snapshotLocator(sourceRef)
+  CitationService --> NoteController : version/block/page/section/quote
+  NoteController -> NoteRepo : create Annotation或NoteCard
+  NoteRepo --> NoteController : noteId
+  NoteController -> TagService : attachTags(noteId, tags)
+  TagService --> NoteController : normalizedTags
+  NoteController -> Audit : record(note_saved, noteId, sourceRef)
+  NoteController --> UI : saved(noteId, sourceLocator)
+end
+
+UI --> Reader : 显示保存结果和返回原文入口
+@enduml
+

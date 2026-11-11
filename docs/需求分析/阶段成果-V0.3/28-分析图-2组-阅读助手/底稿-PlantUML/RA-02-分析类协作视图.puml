@@ -1,0 +1,81 @@
+@startuml
+title 图 RA-02 分析类协作视图：边界类、控制类与实体域
+hide empty members
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+package "边界类" {
+  boundary "LibraryImportUI\n文档库 / 导入" as LibraryImportUI
+  boundary "ReaderWorkbenchUI\n阅读工作台" as ReaderWorkbenchUI
+  boundary "SearchUI\n检索界面" as SearchUI
+  boundary "ConsentDialog\n逐文件外发确认（由问答/摘要触发）" as ConsentDialog
+  boundary "SettingsUI\n设置界面" as SettingsUI
+  boundary "NotesUI\n笔记 / 导出" as NotesUI
+}
+package "控制类" {
+  control "ImportCoordinator\n导入协调器" as ImportCoordinator
+  control "ParseTaskService\n解析任务服务" as ParseTaskService
+  control "IndexService\n索引服务" as IndexService
+  control "PolicyGate\n权限与证据门控" as PolicyGate
+  control "RetrievalService\n检索服务" as RetrievalService
+  control "QAOrchestrator\n问答编排" as QAOrchestrator
+  control "CitationVerifier\n引用校验" as CitationVerifier
+  control "NoteService\n笔记服务" as NoteService
+  control "ExportService\n导出服务" as ExportService
+}
+package "组织与权限" {
+  class Workspace
+  class User
+  class DocumentSpace
+  class PermissionGrant
+  class Policy
+  class ModelConfig
+}
+package "文档与解析" {
+  class Document
+  class DocumentVersion
+  class ParseRun
+  class Page
+  class ContentBlock
+}
+package "索引" {
+  class IndexingRun
+  class Index
+}
+package "检索与问答" {
+  class DocumentSet
+  class Query
+  class Evidence
+  class Answer
+  class Claim
+  class Citation
+}
+package "笔记与治理" {
+  class Note
+  class ExportJob
+  class Notification
+  class AuditEvent
+}
+
+LibraryImportUI --> ImportCoordinator : UC01
+ReaderWorkbenchUI --> QAOrchestrator : UC06/07
+SearchUI --> RetrievalService : UC05
+SettingsUI --> PolicyGate : UC11
+NotesUI --> NoteService : UC09
+NotesUI --> ExportService : UC10
+ImportCoordinator --> 组织与权限
+ParseTaskService --> 文档与解析
+IndexService --> 索引
+PolicyGate --> 组织与权限
+RetrievalService --> 检索与问答
+QAOrchestrator --> 检索与问答
+CitationVerifier --> 检索与问答
+NoteService --> 笔记与治理
+ExportService --> 笔记与治理
+ImportCoordinator --> ParseTaskService
+ParseTaskService --> IndexService
+RetrievalService --> PolicyGate
+QAOrchestrator --> PolicyGate
+QAOrchestrator --> RetrievalService
+QAOrchestrator --> CitationVerifier
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+hide footbox
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 18
+skinparam sequenceParticipantFontSize 18
+skinparam sequenceMessageFontSize 17
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceGroupFontSize 17
+skinparam ParticipantPadding 30
+skinparam BoxPadding 12
+skinparam ArrowColor #31546F
+skinparam LifeLineBorderColor #7A91A5
+skinparam ParticipantBorderColor #2F75B5
+skinparam ParticipantBackgroundColor #EDF4FB
+skinparam ActorBorderColor #2F75B5
+skinparam ActorBackgroundColor #FFFFFF
+autonumber
+
+actor 用户 as User
+boundary "检索界面" as UI
+control "检索控制器" as Search
+control "权限校验" as Gate
+control "检索服务" as Retrieval
+database "版本索引" as Index
+
+User -> UI : 显式选择文档集并输入查询
+UI -> Search : 提交Query与DocumentSet
+Search -> Gate : 校验每个文档版本的访问权限
+Gate --> Search : 返回允许版本与拒绝原因
+
+alt 没有可检索文档
+  Search --> UI : 返回空范围，不调用索引
+else 存在授权版本
+  Search -> Retrieval : 传入授权版本、查询和过滤条件
+  Retrieval -> Index : 仅检索允许版本
+  Index --> Retrieval : 返回命中、来源版本与相关度
+  Retrieval --> Search : 排序并标记冲突或陈旧结果
+  Search --> UI : 展示结果与来源，不扩大查询范围
+end
+UI --> User : 可按来源文档继续核验
+@enduml

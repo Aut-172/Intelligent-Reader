@@ -1,0 +1,79 @@
+@startuml
+title 图 RA-01b 核心业务类图（二）· 检索与问答
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+class "DocumentVersion" as DocumentVersion <<引用>> {
+}
+class "ContentBlock" as ContentBlock <<引用>> {
+}
+class "PermissionGrant" as PermissionGrant <<引用>> {
+}
+class "ModelConfig" as ModelConfig <<引用>> {
+}
+class "DocumentSet" as DocumentSet {
+  + set_id
+  + selected_scope
+  --
+  + includes(version)
+  + validate()
+}
+class "Query" as Query {
+  + query_id
+  + text
+  + created_at
+  + scope
+  --
+  + submit()
+  + normalize()
+}
+class "Evidence" as Evidence {
+  + evidence_id
+  + location_status
+  + contract_status
+  --
+  + build(block)
+  + verifyLocator()
+  + isComplete()
+}
+class "Answer" as Answer {
+  + answer_id
+  + status
+  + model
+  + needs_review
+  --
+  + addClaim()
+  + markStatus()
+  + requiresReview()
+}
+class "Claim" as Claim {
+  + claim_id
+  + text
+  + support_status
+  --
+  + bind(citation)
+  + markSupport(status)
+}
+class "Citation" as Citation {
+  + citation_id
+  + quote
+  + page
+  + locator
+  --
+  + resolve()
+  + verifyQuote()
+  + markInvalid()
+}
+
+DocumentSet "1" o-- "1..*" DocumentVersion : 范围
+Query "0..*" --> "0..1" DocumentSet : 检索范围
+Query "0..*" --> "0..1" Answer : 产生
+Answer "1" *-- "1..*" Claim : 包含
+Claim "1" *-- "0..*" Citation : 绑定
+Citation "1" -- "1" Evidence : 指向
+Evidence "1" -- "1" ContentBlock : 来源
+Answer "0..*" --> "0..1" ModelConfig : 模型
+Answer ..> PermissionGrant : gate
+@enduml

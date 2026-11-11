@@ -1,0 +1,62 @@
+@startuml
+title 段落或选中文本问答时序图 作业3 V0.1
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam sequenceMessageAlign center
+autonumber
+
+actor "阅读者" as Reader
+boundary "阅读器界面" as UI
+control "问答控制器" as QA
+control "权限服务" as Permission
+control "检索服务" as Retrieval
+database "索引仓库" as Index
+control "证据门控" as Gate
+control "审计服务" as Audit
+control "模型适配器" as Model
+control "引用校验器" as Validator
+database "文档仓库" as Repo
+
+Reader -> UI : 选择段落或当前文档并提交问题
+UI -> QA : ask(query, selectedScope)
+QA -> Permission : filterAuthorizedScope(user, selectedScope)
+Permission --> QA : authorizedVersions
+
+alt 授权范围为空
+  QA --> UI : refused(无可访问文档)
+else 有授权范围
+  QA -> Retrieval : retrieve(query, authorizedVersions)
+  Retrieval -> Index : hybridSearch(query, scope)
+  Index --> Retrieval : candidateEvidence
+  Retrieval --> QA : rankedEvidence
+  QA -> Gate : validateVersionPermissionConfidence(evidence)
+  alt 无有效依据或证据契约不完整
+    Gate --> QA : rejected(reason)
+    QA --> UI : 无法确认并提供原文/检索或人工复核
+  else 证据通过
+    Gate --> QA : validEvidenceContract
+    QA --> UI : 展示拟外发文件、证据范围、服务和用途
+    Reader -> UI : 本次逐文件确认或拒绝
+    alt 拒绝外发、离线或策略禁止
+      UI -> QA : rejected
+      QA --> UI : local_evidence_only(本地证据与原文)
+    else 明确确认
+      UI -> QA : confirmed(fileIds)
+      QA -> Audit : recordConsent(requestId, fileIds, purpose)
+      QA ->> Model : generate(query, evidenceContract)
+      Model --> QA : AnswerSchema(claims, citations)
+      QA -> Validator : validate(answer, evidenceAllowList)
+      Validator -> Repo : locate(version, block, page, quote)
+      Repo --> Validator : sourceLocations
+      alt 全部关键断言有有效引用
+        Validator --> QA : citation_checked
+        QA --> UI : answered(流式回答、来源、跳转与高亮)
+      else 引用未知、越界、过期或不支持
+        Validator --> QA : invalid(details)
+        QA --> UI : needs_human_review或refused
+      end
+    end
+  end
+end
+@enduml
+

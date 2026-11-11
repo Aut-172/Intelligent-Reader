@@ -1,0 +1,199 @@
+@startuml
+title 智能阅读器核心业务类图 作业3 V0.1 第一组独立分析
+left to right direction
+hide circle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam nodesep 22
+skinparam ranksep 28
+
+class User {
+  +userId: UUID
+  +displayName: String
+  +locale: String
+  +importDocument(file): DocumentVersion
+  +submitQuery(text, scope): Query
+}
+class Workspace {
+  +workspaceId: UUID
+  +name: String
+  +storageQuota: Long
+  +addMember(user, role)
+  +updatePolicy(policy)
+}
+class WorkspaceMembership {
+  +membershipId: UUID
+  +role: String
+  +status: String
+  +changeRole(role)
+}
+class PermissionGrant {
+  +grantId: UUID
+  +subjectId: UUID
+  +resourceId: UUID
+  +action: String
+  +allows(action): Boolean
+}
+class Policy {
+  +policyId: UUID
+  +version: String
+  +allowCloud: Boolean
+  +requirePerFileConsent: Boolean
+  +checkExternalTransfer(evidence): Boolean
+}
+
+class DocumentSpace {
+  +spaceId: UUID
+  +name: String
+  +authorizationScope: String
+  +addDocument(document)
+}
+class Document {
+  +documentId: UUID
+  +title: String
+  +format: String
+  +sensitivity: String
+  +addVersion(hash): DocumentVersion
+}
+class DocumentVersion {
+  +versionId: UUID
+  +sourceHash: String
+  +importedAt: DateTime
+  +stale: Boolean
+  +markStale(reason)
+}
+class ParseRun {
+  +parseRunId: UUID
+  +parserVersion: String
+  +status: String
+  +warnings: String[*]
+  +retry()
+}
+class Page {
+  +pageId: UUID
+  +physicalPage: Integer
+  +pageLabel: String
+  +assetRef: URI
+  +locate(blockId): Region
+}
+class ContentBlock {
+  +blockId: UUID
+  +blockType: String
+  +text: String
+  +sectionPath: String
+  +bbox: String
+  +confidence: Decimal
+  +sourceLocator(): Locator
+}
+class IndexSegment {
+  +segmentId: UUID
+  +indexType: String
+  +vectorRef: String
+  +stale: Boolean
+  +invalidate()
+}
+
+class DocumentSet {
+  +setId: UUID
+  +name: String
+  +selectedScope: String
+  +addVersion(versionId)
+}
+class Query {
+  +queryId: UUID
+  +text: String
+  +scopeType: String
+  +createdAt: DateTime
+  +execute()
+}
+class Evidence {
+  +evidenceId: UUID
+  +locationStatus: String
+  +contractStatus: String
+  +validateContract(): Boolean
+}
+class Answer {
+  +answerId: UUID
+  +status: String
+  +model: String
+  +needsReview: Boolean
+  +markForReview(reason)
+}
+class Claim {
+  +claimId: UUID
+  +text: String
+  +supportStatus: String
+  +bindCitation(citation)
+}
+class Citation {
+  +citationId: UUID
+  +quote: String
+  +pageLabel: String
+  +locator: String
+  +verify(): Boolean
+}
+class NoteCard {
+  +noteId: UUID
+  +type: String
+  +body: String
+  +tags: String[*]
+  +sourceStatus: String
+  +linkSource(source)
+}
+class ExportJob {
+  +exportJobId: UUID
+  +format: String
+  +targetPath: String
+  +status: String
+  +start()
+}
+
+User "1" -- "0..*" WorkspaceMembership
+Workspace "1" *-- "1..*" WorkspaceMembership
+Workspace "1" *-- "1" Policy
+Workspace "1" *-- "0..*" DocumentSpace
+DocumentSpace "1" *-- "0..*" Document
+DocumentSpace "1" o-- "0..*" PermissionGrant
+PermissionGrant ..> Policy : 依据
+
+Document "1" *-- "1..*" DocumentVersion
+DocumentVersion "1" *-- "0..*" ParseRun
+DocumentVersion "1" *-- "0..*" Page
+Page "1" *-- "0..*" ContentBlock
+DocumentVersion "1" *-- "0..*" IndexSegment
+IndexSegment "0..*" --> "1" ContentBlock : 索引
+
+DocumentSet "0..*" o-- "1..*" DocumentVersion : 显式选择
+User "1" -- "0..*" Query
+Query "0..*" --> "0..1" DocumentSet : 多文档范围
+Query "0..*" --> "0..1" DocumentVersion : 单文档范围
+Query "1" --> "0..1" Answer
+Answer "1" *-- "1..*" Claim
+Claim "1" *-- "0..*" Citation
+Citation "1" --> "1" Evidence
+Evidence "0..*" --> "1" ContentBlock
+Answer ..> PermissionGrant : 生成前门控
+
+User "1" -- "0..*" NoteCard
+NoteCard "0..*" --> "0..1" ContentBlock
+NoteCard "0..*" --> "0..1" Answer
+User "1" -- "0..*" ExportJob
+ExportJob "0..*" o-- "0..*" NoteCard
+ExportJob "0..*" o-- "0..*" Citation
+
+note bottom of Query
+  单文档范围关联一个 DocumentVersion；
+  多文档范围关联一个显式选择的 DocumentSet。
+end note
+note bottom of WorkspaceMembership
+  角色种类与共享工作区是否进入一期仍为TBD-1；
+  本类仅避免把User建模为Workspace的组成部分。
+end note
+note bottom of ContentBlock
+  方法表示分析阶段业务职责，
+  不等同于最终接口或代码签名。
+end note
+@enduml

@@ -1,0 +1,158 @@
+@startuml
+title 图 RA-01a 核心业务类图（一）· 组织、文档与索引
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+class "Workspace" as Workspace {
+  + workspace_id
+  + storage_quota
+  --
+  + createSpace()
+  + grantAccess()
+  + quota()
+}
+class "User" as User {
+  + user_id
+  + role
+  + locale
+  --
+  + submitQuery()
+  + createNote()
+  + exportResult()
+}
+class "DocumentSpace" as DocumentSpace {
+  + space_id
+  + name
+  + authorization_scope
+  --
+  + addDocument()
+  + removeDocument()
+  + listDocuments()
+}
+class "PermissionGrant" as PermissionGrant {
+  + subject
+  + resource
+  + action
+  + policy_version
+  --
+  + allows(action)
+  + revoke()
+}
+class "Policy" as Policy {
+  + policy_id
+  + policy_version
+  + require_citation
+  + require_per_file_consent
+  + confidence_threshold
+  + export_scope
+  --
+  + evaluate(ctx)
+  + allowsCloud()
+}
+class "ModelConfig" as ModelConfig {
+  + config_id
+  + provider
+  + model_name
+  + routing_policy
+  + allow_cloud
+  --
+  + route(task)
+  + isCloudAllowed()
+}
+class "Document" as Document {
+  + document_id
+  + title
+  + format
+  + sensitivity
+  + authorization_status
+  --
+  + registerVersion()
+  + markStale()
+  + versions()
+}
+class "DocumentVersion" as DocumentVersion {
+  + version_id
+  + source_hash
+  + imported_at
+  + stale
+  --
+  + sameHash(hash)
+  + markStale()
+  + pages()
+}
+class "ParseRun" as ParseRun {
+  + parse_run_id
+  + parser_version
+  + config_hash
+  + status
+  + warnings
+  --
+  + start()
+  + complete(warnings)
+  + fail(code)
+  + needsReview(reason)
+}
+class "Page" as Page {
+  + page_id
+  + physical_page
+  + page_label
+  + asset_ref
+  --
+  + blocks()
+  + locatorFor(offset)
+}
+class "ContentBlock" as ContentBlock {
+  + block_id
+  + block_type
+  + text
+  + section_path
+  + char_start/end
+  + bbox
+  + confidence
+  --
+  + quote(start,end)
+  + locate()
+  + isLowConfidence()
+}
+class "IndexingRun" as IndexingRun {
+  + run_id
+  + engine_version
+  + config_hash
+  + status
+  + warnings
+  --
+  + start()
+  + complete()
+  + fail(code)
+}
+class "Index" as Index {
+  + index_id
+  + version_id
+  + index_type
+  + build_status
+  + built_at
+  + stale
+  --
+  + search(q, filters)
+  + entries()
+  + markStale()
+}
+
+Workspace "1" *-- "0..*" DocumentSpace : 包含
+User "0..*" -- "1..*" Workspace : 成员
+DocumentSpace "1" *-- "0..*" Document : 包含
+DocumentSpace "1" *-- "0..*" PermissionGrant : 授权
+Workspace "1" *-- "0..*" Policy : 策略
+Workspace "1" *-- "0..*" ModelConfig : 模型
+PermissionGrant ..> Policy : 依据
+PermissionGrant ..> DocumentVersion : filters
+Document "1" *-- "1..*" DocumentVersion : 拥有
+DocumentVersion "1" *-- "0..*" ParseRun : 解析
+DocumentVersion "1" *-- "1..*" Page : 页面
+Page "1" *-- "0..*" ContentBlock : 内容
+DocumentVersion "1" *-- "0..*" IndexingRun : 索引
+IndexingRun "1" -- "0..*" Index : 产出
+Index "0..*" -- "1..*" ContentBlock : 索引条目
+@enduml

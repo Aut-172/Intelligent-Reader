@@ -1,0 +1,82 @@
+@startuml
+top to bottom direction
+hide circle
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 17
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #F7FAFC
+  BorderColor #287A78
+  ArrowColor #4B6075
+  FontColor #1F2937
+  HeaderBackgroundColor #287A78
+  HeaderFontColor white
+}
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 48
+
+class DocumentSet {
+  + selected_scope
+  --
+  + validate()
+}
+class Query {
+  + text / scope
+  --
+  + submit()
+}
+class Evidence {
+  + location_status
+  + contract_status
+  --
+  + verifyLocator()
+}
+class Answer {
+  + status / model
+  + needs_review
+  --
+  + addClaim()
+}
+class Claim {
+  + text
+  + support_status
+  --
+  + bind(citation)
+}
+class Citation {
+  + quote / page
+  + locator
+  --
+  + verifyQuote()
+}
+class ContentBlock {
+  + text
+  + bbox / confidence
+  --
+  + locate()
+}
+class PermissionGrant {
+  + resource / action
+  --
+  + allows(action)
+}
+
+Query --> DocumentSet
+Query --> Evidence
+Evidence --> ContentBlock
+Query --> Answer
+Answer *-- Claim
+Claim *-- Citation
+Citation --> Evidence
+PermissionGrant ..> DocumentSet
+
+DocumentSet -[hidden]right- Query
+Query -[hidden]right- Evidence
+Evidence -[hidden]right- ContentBlock
+PermissionGrant -[hidden]right- Answer
+Answer -[hidden]right- Claim
+Claim -[hidden]right- Citation
+@enduml

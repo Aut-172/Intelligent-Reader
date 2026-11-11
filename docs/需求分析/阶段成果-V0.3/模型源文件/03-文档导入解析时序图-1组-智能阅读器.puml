@@ -1,0 +1,59 @@
+@startuml
+title 文档导入解析时序图 作业3 V0.1
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam sequenceMessageAlign center
+autonumber
+
+actor "阅读者" as Reader
+boundary "阅读器界面" as UI
+control "导入控制器" as Import
+control "权限服务" as Permission
+database "文档仓库" as Repo
+collections "对象存储" as Store
+control "任务调度服务" as Task
+control "解析/OCR适配器" as Parser
+control "索引服务" as Index
+control "通知服务" as Notify
+
+Reader -> UI : 明确选择文件并发起导入
+UI -> Import : import(file, workspaceId)
+Import -> Permission : checkReadAndImport(user, file)
+
+alt 无权限或格式不支持
+  Permission --> Import : rejected(reason)
+  Import --> UI : 显示原因且不读取其他文件
+else 校验通过
+  Permission --> Import : allowed
+  Import -> Import : 计算 sourceHash
+  Import -> Repo : findActiveVersion(sourceHash)
+  alt 已存在相同有效版本
+    Repo --> Import : existingVersion
+    Import --> UI : 返回既有版本并提示重复
+  else 新版本
+    Import -> Store : 保存受控副本(不修改源文件)
+    Store --> Import : objectRef
+    Import -> Repo : create Document/DocumentVersion
+    Import -> Task : create ParseRun(versionId)
+    Task --> UI : 返回任务标识和 queued 状态
+    Task ->> Parser : parse(versionId, objectRef)
+    Parser -> Parser : 提取页、块、目录、bbox、offset、confidence
+    alt OCR或结构低置信
+      Parser -> Repo : save pages/blocks/warnings
+      Parser -> Task : complete(needs_review)
+      Task -> Notify : publishReviewRequired(versionId)
+    else 解析成功
+      Parser -> Repo : save pages/blocks
+      Parser ->> Index : build(versionId, blocks, permissionScope)
+      Index -> Repo : save IndexSegment
+      Index -> Task : complete(indexed)
+      Task -> Notify : publishIndexed(versionId)
+    else 解析失败
+      Parser -> Task : fail(errorCode, retryable)
+      Task -> Notify : publishFailed(versionId, reason)
+    end
+  end
+end
+Notify --> UI : 展示完成、待复核或失败状态
+@enduml
+
