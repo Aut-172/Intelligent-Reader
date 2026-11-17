@@ -1,0 +1,18 @@
+{
+  "sample_id": "SELF-014",
+  "fixed_queries": [
+    "字体专项",
+    "Font anchor",
+    "Bold anchor",
+    "Serif anchor"
+  ],
+  "expected_evidence_fragments": [
+    "字体专项",
+    "Font anchor",
+    "Bold anchor",
+    "Serif anchor"
+  ],
+  "reference_notes": "A-E02 supplementary sample",
+  "annotation_version": 1,
+  "source": "project-authored"
+}

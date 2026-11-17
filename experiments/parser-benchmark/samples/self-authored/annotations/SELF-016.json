@@ -1,0 +1,14 @@
+{
+  "sample_id": "SELF-016",
+  "fixed_queries": [
+    "大页样本",
+    "page 30 anchor"
+  ],
+  "expected_evidence_fragments": [
+    "大页样本",
+    "page 30 anchor"
+  ],
+  "reference_notes": "A-E02 supplementary sample",
+  "annotation_version": 1,
+  "source": "project-authored"
+}
