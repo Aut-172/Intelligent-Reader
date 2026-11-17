@@ -1,0 +1,51 @@
+@startuml ARCH-02a-客户端逻辑分层图
+' 课堂汇报拆分图，来源：../ARCH-02-逻辑架构图.puml
+!pragma layout smetana
+title 客户端逻辑分层与双端边界
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam roundCorner 8
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+top to bottom direction
+
+package "表现与交互" #E1F5FE {
+  component "Android 原生 UI\n阅读、选区、同意、冲突" as AUI
+  component "Windows 原生 UI\n阅读、多窗口、同意、冲突" as WUI
+}
+
+package "应用编排" #F1F8E9 {
+  component "文档导入与版本识别" as Import
+  component "本地检索与证据裁剪" as Retrieval
+  component "AI 问答与同步编排" as Orchestration
+}
+
+package "KMP 共享核心候选" #FFF3CD {
+  component "领域模型与不变量" as Domain
+  component "同步状态机与冲突策略" as Sync
+  component "API / 证据 / 引用合同" as Contracts
+  component "序列化与 commonTest" as Tests
+}
+
+package "平台适配" #EDE7F6 {
+  component "Android\nSAF / 文档 / OCR\nRoom / Keystore / WorkManager" as Android
+  component "Windows\n文件与文档组件 / OCR\nSQLite / DPAPI / TaskHost" as Windows
+}
+
+database "端侧本地数据\n原文、笔记、全文索引、向量索引、操作队列" as Local #ECEFF1
+
+AUI --> Import
+WUI --> Import
+Import --> Domain
+Retrieval --> Contracts
+Orchestration --> Sync
+Android ..> Domain : 实现端口
+Windows ..> Domain : 实现端口
+Android --> Local
+Windows --> Local
+
+note right of Tests
+共享领域、同步、合同和测试。
+UI、文件、数据库、安全存储、后台任务分端实现。
+end note
+@enduml

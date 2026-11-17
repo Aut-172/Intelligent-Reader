@@ -1,0 +1,34 @@
+@startuml FLOW-03a-文档到可核验回答数据流
+' 课堂汇报拆分图，来源：../FLOW-03-本地混合检索最少证据选择与AI问答引用核验.puml
+title 文档到可核验回答的数据流
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 18
+skinparam roundCorner 8
+skinparam componentStyle rectangle
+top to bottom direction
+
+actor "用户" as User
+database "端侧原文与本地索引" as Local #E8F3EF
+component "1 本地混合检索\n全文 / BM25 + 向量召回" as Search #E8F3EF
+component "2 权限过滤与最少证据裁剪\n逐文件同意、绑定文档版本" as Trim #FFF3CD
+component "3 AI / RAG 网关\n合同校验、限流、ModelAdapter" as Gateway #FFF1E5
+cloud "模型 API" as Model #FFF3E0
+component "4 客户端引用核验\n白名单 + 双锚点" as Verify #E1F5FE
+component "带引用回答\n可回跳原文" as Answer #E1F5FE
+
+User -down-> Search : 提问
+Local -right-> Search : 只在端侧检索
+Search -down-> Trim : 候选片段
+Trim -down-> Gateway : HTTPS 最少证据包
+Gateway -right-> Model : 结构化请求
+Model -left-> Gateway : SSE / 完整结果
+Gateway -down-> Verify : 回答与引用编号
+Local -right-> Verify : 证据白名单与锚点
+Verify -down-> Answer
+Answer -left-> User
+
+note bottom of Trim
+云端不接收原文、完整索引或未经授权的片段。
+end note
+@enduml

@@ -1,0 +1,35 @@
+@startuml ARCH-02b-服务端逻辑分层与职责图
+' 课堂汇报拆分图，来源：../ARCH-02-逻辑架构图.puml 与 ../ARCH-03-进程与通信边界图.puml
+!pragma layout smetana
+title 服务端逻辑分层、服务职责与通信
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam roundCorner 8
+skinparam componentStyle rectangle
+left to right direction
+
+cloud "Android / Windows 客户端" as Client #E1F5FE
+component "HTTPS Ingress\nTLS、限流、路由" as Ingress #ECEFF1
+
+package "三个粗粒度责任单元" #F8F9FA {
+  component "身份与同步\n账号、设备、幂等\nrevision / cursor / tombstone" as Sync #E8F3EF
+  component "AI / RAG 网关\n证据合同、ModelAdapter\nSSE 与轮询降级" as AI #FFF1E5
+  component "任务与审计 Worker\nlease、重试、清理\n内容无关审计" as Worker #EDE7F6
+}
+
+database "PostgreSQL\n当前态、变更流、任务表" as PG #ECEFF1
+cloud "受控模型供应商" as Model #FFF3E0
+
+Client --> Ingress : HTTPS REST / SSE
+Ingress --> Sync : 同步 API
+Ingress --> AI : 问答 API
+Sync --> PG : 单事务写入
+AI --> PG : 请求状态与审计
+Worker --> PG : lease 抢占
+AI --> Model : 适配器调用
+
+note bottom of Worker
+一期可同机部署。逻辑边界用于隔离责任、故障和数据，
+不等于必须拆成三个独立微服务。
+end note
+@enduml
