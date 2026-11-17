@@ -1,0 +1,69 @@
+@startuml FLOW-02-Windows文档选择访问解析与本地索引
+title 图 FLOW-02 时序图·Windows文档选择、路径访问、解析与本地混合索引\n(关联：UC01, UC02 | 决策：D-02, D-05, D-20, D-22, D-23, D-26 | 质量场景：QA-27, QA-28 | ADR-022, ADR-023)
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "Windows 个人用户" as User
+boundary "WinDesktopReaderUI\n(桌面端交互界面)" as UI
+control "WinFileAccessHandler\n(文件对话框 / 拖放适配)" as WinFile
+control "WinImportCoordinator\n(Windows 导入协调器)" as Coord
+control "WinDocParserAdapter\n(Windows.Data.Pdf / PDF 适配)" as Parser
+control "WinOCRAdapter\n(桌面 OCR 适配器)" as OCR
+control "LocalHybridIndexEngine\n(本地混合检索索引引擎)" as Indexer
+database "WinLocalSqliteStore\n(AppData 本地 SQLite)" as LocalDB
+control "WinTaskHost\n(桌面持久后台任务宿主)" as TaskHost
+
+User -> UI : 拖拽 PDF 文档入窗口或点击“打开文件”
+UI -> WinFile : FileOpenPicker / DragDropEvent
+WinFile -> WinFile : 校验本地文件路径与 Windows ACL 读取权限
+WinFile --> UI : 返回绝对文件路径 (FilePath) 与文件句柄
+
+UI -> Coord : importWindowsDocument(FilePath)
+Coord -> Coord : 读取文件流，计算 SHA-256 哈希值 (SourceHash)
+
+Coord -> LocalDB : queryDocumentByHash(SourceHash)
+alt [本地已存在相同 SourceHash 的文档]
+    LocalDB --> Coord : 返回现有 docId, versionId
+    Coord --> UI : 提示已存在，直接载入阅读窗口并恢复上次阅读进度
+else [新文档或编辑更新后的文档]
+    Coord -> LocalDB : insertDocument(docId, SourceHash, FilePath, ParserVersion)
+    Coord -> TaskHost : submitAsyncTask(docId, versionId, ACTION_PARSE_INDEX)
+    TaskHost --> Coord : 任务已排队持久化
+    Coord --> UI : 返回导入成功通知，桌面托盘/状态栏展示解析进度
+end
+
+== Windows 异步多线程后台解析与混合索引链路 ==
+
+TaskHost -> Parser : parseDocument(FilePath)
+Parser -> Parser : 加载 PDF 结构，提取文字流、段落大纲与双精度 BBox 坐标
+
+alt [扫描文档或混合图片页面]
+    Parser -> OCR : recognizePage(PageImage)
+    OCR -> OCR : 桌面推理，抽取坐标与文字，输出置信度评分
+    OCR --> Parser : 返回识别文字与 NormalizedRect(x, y, w, h)
+    Parser -> Parser : 标记来源为 OCR_DERIVED，关联对应图像区域
+else [复杂双栏、表格或跨页结构]
+    Parser -> Parser : 生成层次化 SectionPath 与结构锚点，标记排版约束
+end
+
+Parser --> TaskHost : 封装统一文档模型 DocumentPage(pages, blocks, bboxes)
+
+TaskHost -> Indexer : buildLocalHybridIndex(docId, versionId, pages)
+Indexer -> Indexer : 1. 词干提取与分词，构建本地 BM25 倒排索引
+Indexer -> Indexer : 2. 调用本地 ONNX 运行时中文 Embedding 模型，生成向量矩阵
+Indexer -> LocalDB : 事务提交写入混合索引、文本范围映射表与初始双锚点
+Indexer --> TaskHost : 索引成功建立
+
+TaskHost -> LocalDB : updateTaskStatus(docId, READY)
+TaskHost --> UI : PostMessage / 事件通知解析就绪
+UI --> User : 页面高亮渲染完成，目录树就绪，支持精准选区与即时问答
+
+note over Coord, LocalDB
+  **跨平台一致性保证与数据边界 (D-02, D-05, D-22):**
+  1. Windows 端路径、句柄与临时渲染缓存严格保存在本地 AppData/Local 目录。
+  2. 即使底层解析引擎与 Android 不同，最终暴露给检索与引用的都是统一合同 (DocumentPage)。
+  3. 文档正文与本地混合索引绝对不经过网络传输。
+end note
+
+@enduml

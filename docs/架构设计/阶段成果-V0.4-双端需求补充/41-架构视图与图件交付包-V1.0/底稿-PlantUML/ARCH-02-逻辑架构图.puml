@@ -1,0 +1,139 @@
+@startuml ARCH-02-逻辑架构图
+title 图 ARCH-02 逻辑架构图（正式图 / UML 逻辑分层与包依赖图）
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam roundCorner 8
+skinparam linetype ortho
+
+package "第 1 层：表现与交互层 (Presentation & Interaction Layer)" as Layer_Presentation #E1F5FE {
+    package "Android 表现子系统" as P_Android_UI {
+        class "ComposeReaderScreen\n(阅读器与选区视图)" as UI_And_Reader
+        class "SAFFilePickerHandler\n(持久授权选择入口)" as UI_And_Picker
+        class "AndroidConflictView\n(冲突副本对比呈现)" as UI_And_Conflict
+        class "AndroidConsentDialog\n(逐文件同意与外发声明)" as UI_And_Consent
+    }
+    package "Windows 表现子系统" as P_Win_UI {
+        class "WinDesktopReaderWindow\n(桌面多窗口与阅读视图)" as UI_Win_Reader
+        class "WinFileAccessHandler\n(拖放与文件对话框)" as UI_Win_Picker
+        class "WinConflictView\n(桌面端冲突差异呈现)" as UI_Win_Conflict
+        class "WinConsentDialog\n(逐文件同意与外发声明)" as UI_Win_Consent
+    }
+}
+
+package "第 2 层：应用编排层 (Application Orchestration Layer)" as Layer_App #F1F8E9 {
+    package "客户端编排组件" as App_Client {
+        class "DocumentImportCoordinator\n(文档接入与版本识别编排)" as Coord_Import
+        class "LocalRetrievalCoordinator\n(混合检索、重排与证据裁剪)" as Coord_Retr
+        class "RAGInteractionCoordinator\n(逐次授权、SSE流与降级管理)" as Coord_RAG
+        class "SyncQueueCoordinator\n(离线操作入队与周期推送)" as Coord_Sync
+        class "ActiveExportCoordinator\n(Markdown/PDF 统一语义导出)" as Coord_Export
+    }
+    package "服务端用例组件" as App_Server {
+        class "AccountSessionUseCase\n(个人身份、会话与令牌管理)" as UC_Auth
+        class "SyncTransactionUseCase\n(原子变更流、revision与幂等事务)" as UC_Sync
+        class "EvidenceValidationUseCase\n(证据包合同校验与长度限制)" as UC_AI
+        class "TaskSchedulerUseCase\n(lease 抢占、重试与故障恢复)" as UC_Task
+    }
+}
+
+package "第 3 层：领域与合同层 (Domain & Contract Layer)" as Layer_Domain #FFF8E1 {
+    package "KMP 共享领域核心 (Candidate Shared Core)" as Domain_KMP #FFE082 {
+        class "DocumentIdentity\n+ docId: UUID\n+ sourceHash: String\n+ isLikelyNewVersion(): bool" as Dom_Doc
+        class "DocumentVersion\n+ versionId: UUID\n+ parserVersion: String\n+ createdAt: Timestamp" as Dom_Ver
+        class "CitationAnchor\n+ structAnchor: SectionPath\n+ charAnchor: TextRange\n+ isStale: Boolean" as Dom_Cit
+        class "SyncOperation\n+ operationId: UUID\n+ entityType: EntityEnum\n+ payload: JsonString\n+ baseRevision: Long" as Dom_Op
+        class "SyncState\n+ currentCursor: String\n+ syncEpoch: Long\n+ status: SyncStatusEnum" as Dom_State
+        interface "IConflictResolutionPolicy\n+ resolveNoteConflict(): NoteConflictCopy\n+ resolveProgress(): Progress" as Policy_Conflict
+        interface "IDocumentParserPort\n+ parseDocument(): DocumentPage\n+ normalizeBBox(): NormalizedRect" as Port_Parser
+        interface "ILocalStoragePort\n+ saveOperation(): void\n+ getPendingOperations(): List" as Port_LocalStore
+        interface "ISecureStorePort\n+ getAccessToken(): String\n+ saveToken(): void" as Port_SecStore
+        interface "IModelGatewayPort\n+ sendEvidenceStream(): Flow" as Port_ModelGateway
+    }
+    
+    package "服务端领域模型与公共契约" as Domain_Server #FFECB3 {
+        class "AccountEntity\n+ userId: UUID\n+ passwordHash: String\n+ deviceSessions: List" as Srv_User
+        class "AccountChangeLogEntry\n+ revision: Long\n+ operationId: UUID\n+ tombstone: Boolean" as Srv_ChangeLog
+        class "AsyncTaskRecord\n+ taskId: UUID\n+ leaseOwner: String\n+ leaseUntil: Timestamp\n+ attemptCount: Int" as Srv_TaskRecord
+        class "EvidencePackageDTO\n+ docVersion: String\n+ snippets: List<TextRange>\n+ userConsentToken: String" as DTO_Evidence
+        class "UnifiedErrorEnvelope\n+ errorCode: String\n+ degradationReason: String\n+ retryAfter: Int" as DTO_Error
+    }
+}
+
+package "第 4 层：平台适配与驱动层 (Platform Adaptation Layer)" as Layer_Adapter #EDE7F6 {
+    package "Android 专用适配器" as Adp_Android {
+        class "AndroidDocRendererAdapter\n(PdfRenderer / AndroidX)" as Adp_And_Doc
+        class "AndroidOCRAdapter\n(Paddle/Tesseract 移动端适配)" as Adp_And_OCR
+        class "AndroidKeystoreAdapter\n(硬件级主密钥加密)" as Adp_And_Key
+        class "AndroidWorkManagerAdapter\n(持久任务后台调度)" as Adp_And_Task
+        class "AndroidRoomStorageAdapter\n(本地 SQLite 数据库适配)" as Adp_And_DB
+    }
+    package "Windows 专用适配器" as Adp_Windows {
+        class "WinDocRendererAdapter\n(Windows.Data.Pdf 引擎)" as Adp_Win_Doc
+        class "WinOCRAdapter\n(Windows OCR/Tesseract 适配)" as Adp_Win_OCR
+        class "WinCredentialAdapter\n(DPAPI / Credential Manager)" as Adp_Win_Key
+        class "WinTaskHostAdapter\n(桌面应用持久任务调度)" as Adp_Win_Task
+        class "WinSqliteStorageAdapter\n(本地 SQLite 数据库适配)" as Adp_Win_DB
+    }
+    package "服务端与网络驱动适配器" as Adp_Remote {
+        class "KtorClientAdapter\n(端侧 HTTPS REST/SSE 客户端)" as Adp_Net_Client
+        class "PostgresSyncRepoAdapter\n(单事务变更流与当前态持久化)" as Adp_PG_Sync
+        class "PostgresTaskRepoAdapter\n(lease 抢占与状态回收驱动)" as Adp_PG_Task
+        class "OpenAIModelAdapter\n(Responses API 调用与错误归一化)" as Adp_OpenAI
+    }
+}
+
+package "第 5 层：基础设施与平台层 (Infrastructure Layer)" as Layer_Infra #ECEFF1 {
+    database "客户端本地基础设施\n(沙箱文件系统 / SQLite / 本地向量模型资产)" as Infra_Client
+    database "服务端持久化引擎\n(PostgreSQL 关系型集群 / 云 RDS)" as Infra_PG
+    cloud "外部模型与基础设施\n(OpenAI API 端点 / TLS 加密通道 / 操作系统安全芯片)" as Infra_Cloud
+}
+
+' 依赖流线与依赖倒置关系
+UI_And_Reader --> Coord_Import
+UI_And_Reader --> Coord_Retr
+UI_Win_Reader --> Coord_Import
+UI_Win_Reader --> Coord_Retr
+
+Coord_Import --> Dom_Doc
+Coord_Import --> Port_Parser
+Coord_Retr --> Dom_Cit
+Coord_RAG --> Port_ModelGateway
+Coord_Sync --> Port_LocalStore
+Coord_Sync --> Port_SecStore
+
+Adp_And_Doc .up.|> Port_Parser
+Adp_Win_Doc .up.|> Port_Parser
+Adp_And_DB .up.|> Port_LocalStore
+Adp_Win_DB .up.|> Port_LocalStore
+Adp_And_Key .up.|> Port_SecStore
+Adp_Win_Key .up.|> Port_SecStore
+Adp_Net_Client .up.|> Port_ModelGateway
+
+UC_Sync --> Srv_ChangeLog
+UC_Sync --> Adp_PG_Sync
+UC_Task --> Srv_TaskRecord
+UC_Task --> Adp_PG_Task
+UC_AI --> DTO_Evidence
+UC_AI --> Adp_OpenAI
+
+Adp_PG_Sync --> Infra_PG
+Adp_PG_Task --> Infra_PG
+Adp_OpenAI --> Infra_Cloud
+Adp_And_DB --> Infra_Client
+Adp_Win_DB --> Infra_Client
+
+note right of Domain_KMP
+  **KMP 共享核心纯度规则 (D-03, D-12, D-28):**
+  1. 共享领域模型、公共接口、不可变 DTO 与单元测试。
+  2. 严格杜绝引用任何 Android/Windows 原生 UI、文件句柄、
+     SQLite 驱动、网络 SDK 或线程调度库。
+  3. 全部平台交互通过标准端口 (Port) 依赖倒置实现。
+end note
+
+note right of App_Server
+  **粗粒度服务逻辑单元 (D-11, D-35):**
+  身份与同步、AI 网关、任务 worker 为清晰解耦的逻辑单元，
+  一期允许同机部署，共享底层 PostgreSQL 事务能力。
+end note
+
+@enduml

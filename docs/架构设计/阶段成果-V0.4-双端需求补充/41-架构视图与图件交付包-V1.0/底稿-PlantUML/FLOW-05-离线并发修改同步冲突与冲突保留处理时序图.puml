@@ -1,0 +1,64 @@
+@startuml FLOW-05-离线并发修改同步冲突与冲突保留处理时序图
+title 图 FLOW-05 时序图·离线并发修改、同步冲突与冲突保留处理时序图\n(关联：UC05 | 决策：D-13, D-21 | 质量场景：QA-35 | ADR-013, ADR-021)
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "个人用户" as User
+participant "Android 客户端 A\n(离线编辑)" as ClientA
+participant "Windows 客户端 B\n(离线编辑)" as ClientB
+participant "服务端同步单元\n(sync-service)" as Server
+database "PostgreSQL 数据库\n(同步状态机)" as DB
+
+== 阶段 1：两端基于相同基线 (Rev-10) 发生离线并发修改 (D-13) ==
+
+note over ClientA, ClientB
+  两端均处于离线状态 (断网/飞行模式)，当前本地确认基线均为 **Rev-10**。
+  用户分别在两端对同一篇文档的同一笔记 (Note-X) 和阅读进度进行修改。
+end note
+
+User -> ClientA : 修改 Note-X 内容为：“方案 A 采用 KMP 架构”\n并翻页至第 50 页
+ClientA -> ClientA : 本地提交，入队 Op-A (entityId: Note-X, baseRev: 10, page: 50)
+
+User -> ClientB : 修改同一 Note-X 为：“方案 A 采用 Rust/Tauri 架构”\n并翻页至第 65 页 (晚于 ClientA 5分钟)
+ClientB -> ClientB : 本地提交，入队 Op-B (entityId: Note-X, baseRev: 10, page: 65)
+
+== 阶段 2：客户端 A 先行恢复网络并成功 Push ==
+
+ClientA -> Server : HTTPS POST /api/v1/sync/push (Op-A, baseRev: 10)
+Server -> DB : 校验 baseRev=10 等于当前服务端版本 10
+DB -> DB : 更新 Note-X 为“方案 A 采用 KMP 架构”，进度置为第 50 页\n生成新版本 **Rev-11**
+Server --> ClientA : HTTP 200 OK (status: SUCCESS, confirmedRevision: 11)
+ClientA -> ClientA : 标记 Op-A 已同步，本地基线更新为 Rev-11
+
+== 阶段 3：客户端 B 后续恢复网络，触发冲突判定与保护 (D-13 A) ==
+
+ClientB -> Server : HTTPS POST /api/v1/sync/push (Op-B, baseRev: 10)
+Server -> DB : 检查发现 Note-X 的服务端当前版本已是 Rev-11 (baseRev 10 已过期！)
+
+Server -> Server : 执行 ADR-013 冲突解决策略：\n1. 进度策略：按可信时间戳，更新进度为第 65 页 (最新优先)\n2. 笔记策略：绝不静默覆盖！生成显式“冲突副本 (NoteConflictCopy)”
+
+Server -> DB : 开启 PostgreSQL 事务
+DB -> DB : 保持 Note-X 主体内容不变 (保留 ClientA 内容)
+DB -> DB : 插入冲突副本记录 NoteConflictCopy：\n- originalNoteId: Note-X\n- conflictContent: “方案 A 采用 Rust/Tauri 架构”\n- sourceDevice: "Windows-ClientB"\n- timestamp: T_clientB
+DB -> DB : 追加账号变更日志，生成新版本 **Rev-12**
+Server -> DB : 提交事务 (COMMIT)
+
+Server --> ClientB : HTTP 200 OK (status: CONFLICT_COPY_CREATED, confirmedRev: 12, copyId: UUID-Conflict-1)
+ClientB -> ClientB : 1. 保存服务端最新状态 (基线跃迁为 Rev-12)\n2. 本地持久化 NoteConflictCopy\n3. 触发桌面端通知机制
+
+== 阶段 4：客户端呈现与人工可解释解决 ==
+
+ClientB --> User : 界面弹出横幅：“检测到异地修改冲突，已为您自动保留冲突副本！”
+User -> ClientB : 点击查看冲突对比 (Diff View)
+ClientB --> User : 并排呈现：\n[云端当前主版本] vs [您的离线修改副本]
+User -> ClientB : 选择“保留两份”或“手动整合为新笔记”
+ClientB -> ClientB : 执行用户选择，生成新的常规同步操作入队
+
+note over Server, DB
+  **零数据丢失与防静默覆盖准则 (D-13):**
+  1. 系统在并发冲突时不猜测用户意图，禁止随机覆盖或丢弃任何一端的笔记。
+  2. 冲突副本作为独立一等公民存入服务端和两端，必须由用户通过 UI 显式察觉并确认。
+end note
+
+@enduml
