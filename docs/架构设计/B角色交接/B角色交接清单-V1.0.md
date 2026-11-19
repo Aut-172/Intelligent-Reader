@@ -155,6 +155,7 @@ B 在 C 类补测（C1–C9）后收口：**C8 已在新虚机完成**（`TECH-W
 | 目录改名 | `docs/架构设计/B角色交接/` | 原 `06-角色交接` 改名；保留 3 份交付文档 |
 | 删除文件 | `docs/架构设计/B角色交接/B本机配置与W-E启动步骤清单-V1.0.md` | 迁移提示存根，非交付物；原件在 `_local/`（已 exclude） |
 | 删除（git 跟踪） | 无 | 未删除任何原有跟踪文件；临时文件均在 `_local/` 或 `#_share` |
+| 收尾清理 | `experiments/windows-kmp-minimal/dist/` → `_local/artifacts/dist/`；删除各模块 `build/`、`.gradle/`、`results/vm-we13/`、`we03-cache/`、`we01-deps.txt`；`_local/` 仅保留文档、`artifacts/dist`、工具链/源码包与构建脚本，测试证书、SDK 解压目录及 db/log 已清理；删除旧 VM `Win11-Clean`（30.5 GB），保留新 VM `Win11-Clean-2`；`#_share` 精简为 7 个文件（473.6 MB） | 构建产物与临时文件；报告、MSI 日志、测试样本保留 |
 
 > 除上述新增目录外，`experiments/` 下其余目录（`android-minimal`、`minimal-chain-java`、`parser-benchmark`、`qa-benchmark`、`retrieval-benchmark`、`windows-env-probe`）均为原有目录，只在 `windows-env-probe` 内追加了文件。
 

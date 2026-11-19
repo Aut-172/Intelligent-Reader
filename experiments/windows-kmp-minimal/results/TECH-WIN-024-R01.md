@@ -26,7 +26,7 @@
 | 失败降级 | ✅ 缺失图片被捕获，调用方不崩溃 |
 | 取消 | ❌ `RecognizeAsync` 无 `CancellationToken`；只能放弃任务，不能真正取消 |
 
-原始数据：`experiments/windows-ocr-probe/results/we03-cache-degrade.json`；高亮图：`we03-boxes.png`；缓存目录：`we03-cache/`。
+原始数据：`experiments/windows-ocr-probe/results/we03-cache-degrade.json`；高亮图：`we03-boxes.png`；缓存目录为临时缓存，已在收尾时清理（`we03-cache/` 不再保留）。
 
 ## 4 判定
 

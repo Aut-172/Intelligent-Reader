@@ -108,6 +108,7 @@
 | 既有目录追加 | `experiments/windows-env-probe/` | 新增探针与 002/003/008/013/025 结果 |
 | 目录改名 | `docs/架构设计/B角色交接/` | 原 `06-角色交接` |
 | 删除 | `docs/架构设计/B角色交接/B本机配置与W-E启动步骤清单-V1.0.md` | 非交付物存根；原件在 `_local/` |
+| 收尾清理 | `experiments/windows-kmp-minimal/dist/` → `_local/artifacts/dist/`；删除 `build/`、`.gradle/`、`vm-we13/`、`we03-cache/`、`we01-deps.txt`；删除旧 VM `Win11-Clean`，保留 `Win11-Clean-2`；`#_share` 精简为 7 个文件 | 构建/临时文件；报告与样本保留 |
 
 详见 `B角色交接清单-V1.0.md` §8。
 
