@@ -1,0 +1,45 @@
+﻿{
+    "source":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-rot-180.png",
+    "best":  {
+                 "rotate":  180,
+                 "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-orient-180.png",
+                 "score":  21,
+                 "word_count":  4,
+                 "text":  "Reader Studio W-E03 2026",
+                 "elapsed_ms":  23.6
+             },
+    "candidates":  [
+                       {
+                           "rotate":  0,
+                           "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-orient-0.png",
+                           "score":  14,
+                           "word_count":  9,
+                           "text":  "9 乙 0 乙 EO 彐 一 0!pms P",
+                           "elapsed_ms":  64.2
+                       },
+                       {
+                           "rotate":  90,
+                           "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-orient-90.png",
+                           "score":  0,
+                           "word_count":  0,
+                           "text":  "",
+                           "elapsed_ms":  22
+                       },
+                       {
+                           "rotate":  180,
+                           "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-orient-180.png",
+                           "score":  21,
+                           "word_count":  4,
+                           "text":  "Reader Studio W-E03 2026",
+                           "elapsed_ms":  23.6
+                       },
+                       {
+                           "rotate":  270,
+                           "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-orient-270.png",
+                           "score":  0,
+                           "word_count":  0,
+                           "text":  "",
+                           "elapsed_ms":  20.6
+                       }
+                   ]
+}

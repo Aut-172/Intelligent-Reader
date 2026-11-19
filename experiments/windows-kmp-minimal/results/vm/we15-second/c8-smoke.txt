@@ -1,0 +1,19 @@
+W-E01 smoke run on Windows JVM target
+PASS  identity/same-content-different-name
+PASS  identity/same-name-changed-content
+PASS  retrieval/hit-count
+PASS  retrieval/hit-block-id
+PASS  degradation/local-search-only
+PASS  degradation/local-hit
+PASS  sync/idempotent-enqueue
+PASS  sync/uploaded-one
+PASS  sync/queue-drained
+PASS  conflict/note-keeps-copy
+PASS  citation/valid-same-version
+PASS  citation/stale-on-new-version
+PASS  citation/stale-on-parser-upgrade
+PASS  citation/locator-fails-on-reorder
+PASS  diag/forbidden-attrs-dropped
+PASS  diag/bundle-scanner-clean
+PASS  diag/preview-one-line
+RESULT passed=17 failed=0

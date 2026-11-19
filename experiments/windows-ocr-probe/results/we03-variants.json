@@ -1,0 +1,47 @@
+﻿[
+    {
+        "angle":  0,
+        "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-rot-0.png",
+        "elapsed_ms":  61.8,
+        "text":  "Reader Studio W-E03 2026",
+        "word_count":  4,
+        "has_reader":  true,
+        "has_2026":  true
+    },
+    {
+        "angle":  90,
+        "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-rot-90.png",
+        "elapsed_ms":  22.9,
+        "text":  "",
+        "word_count":  0,
+        "has_reader":  false,
+        "has_2026":  false
+    },
+    {
+        "angle":  180,
+        "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-rot-180.png",
+        "elapsed_ms":  21.5,
+        "text":  "9 乙 0 乙 EO 彐 一 0!pms P",
+        "word_count":  9,
+        "has_reader":  false,
+        "has_2026":  false
+    },
+    {
+        "angle":  45,
+        "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-rot-45.png",
+        "elapsed_ms":  31,
+        "text":  "Reader Studio W-E03 2026",
+        "word_count":  4,
+        "has_reader":  true,
+        "has_2026":  true
+    },
+    {
+        "angle":  "scan-like",
+        "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-scan-like.jpg",
+        "elapsed_ms":  51,
+        "text":  "Reader Studio W-E03 2026 PDF render to OCR pipeline 12345 ABCDEF",
+        "word_count":  11,
+        "has_reader":  true,
+        "has_2026":  true
+    }
+]

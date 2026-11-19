@@ -1,0 +1,101 @@
+﻿{
+    "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-render.png",
+    "languages":  [
+                      "zh-Hans-CN"
+                  ],
+    "elapsed_ms":  95.1,
+    "line_count":  3,
+    "word_count":  11,
+    "text":  "Reader Studio W-E03 2026 PDF render to OCR pipeline 12345 ABCDEF",
+    "lines":  [
+                  "Reader Studio W-E03 2026",
+                  "PDF render to OCR pipeline",
+                  "12345 ABCDEF"
+              ],
+    "words":  [
+                  {
+                      "text":  "Reader",
+                      "x":  205,
+                      "y":  346,
+                      "w":  215,
+                      "h":  49
+                  },
+                  {
+                      "text":  "Studio",
+                      "x":  440,
+                      "y":  345,
+                      "w":  184,
+                      "h":  50
+                  },
+                  {
+                      "text":  "W-E03",
+                      "x":  645,
+                      "y":  346,
+                      "w":  201,
+                      "h":  49
+                  },
+                  {
+                      "text":  "2026",
+                      "x":  869,
+                      "y":  346,
+                      "w":  143,
+                      "h":  49
+                  },
+                  {
+                      "text":  "PDF",
+                      "x":  205,
+                      "y":  457,
+                      "w":  126,
+                      "h":  49
+                  },
+                  {
+                      "text":  "render",
+                      "x":  356,
+                      "y":  457,
+                      "w":  189,
+                      "h":  49
+                  },
+                  {
+                      "text":  "to",
+                      "x":  564,
+                      "y":  459,
+                      "w":  52,
+                      "h":  47
+                  },
+                  {
+                      "text":  "OCR",
+                      "x":  640,
+                      "y":  456,
+                      "w":  144,
+                      "h":  50
+                  },
+                  {
+                      "text":  "pipeline",
+                      "x":  808,
+                      "y":  457,
+                      "w":  223,
+                      "h":  62
+                  },
+                  {
+                      "text":  "12345",
+                      "x":  207,
+                      "y":  568,
+                      "w":  176,
+                      "h":  49
+                  },
+                  {
+                      "text":  "ABCDEF",
+                      "x":  404,
+                      "y":  568,
+                      "w":  267,
+                      "h":  49
+                  }
+              ],
+    "checks":  {
+                   "Reader Studio W-E03 2026":  true,
+                   "PDF render":  true,
+                   "12345":  true
+               },
+    "passed":  3,
+    "total":  3
+}

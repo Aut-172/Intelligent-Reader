@@ -1,0 +1,3 @@
+file	result	detail
+corrupt.pdf	CAUGHT	IOException	Missing root object specification in trailer.
+empty.pdf	CAUGHT	IOException	Error: End-of-File, expected line at offset 0

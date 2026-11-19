@@ -1,0 +1,6 @@
+--- dist tree count --- 
+433
+--- jpackage --- 
+jpackage.exe                  5472 Services                   0    385,388 K Unknown         HYC-clean\HYC-cleaning                                  0:00:53 ÔÝÈ±                                                                    
+--- disk --- 
+CHECK_DONE

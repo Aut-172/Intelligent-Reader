@@ -1,0 +1,36 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.7/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:jvmProcessResources NO-SOURCE
+> Task :shared:processJvmMainResources SKIPPED
+> Task :shared:jvmTestProcessResources NO-SOURCE
+> Task :shared:processJvmTestResources SKIPPED
+> Task :windowsApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :windowsApp:processResources NO-SOURCE
+> Task :windowsApp:processTestResources NO-SOURCE
+> Task :shared:compileKotlinJvm
+> Task :shared:compileJvmMainJava NO-SOURCE
+> Task :shared:jvmMainClasses
+> Task :shared:jvmJar
+> Task :shared:compileTestKotlinJvm
+> Task :windowsApp:compileKotlin
+> Task :shared:compileJvmTestJava NO-SOURCE
+> Task :shared:jvmTestClasses
+> Task :shared:jvmTest
+
+> Task :windowsApp:compileKotlin
+w: file:///C:/we15build/src/windowsApp/src/main/kotlin/reader/windowsmin/app/ai/SseClient.kt:28:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///C:/we15build/src/windowsApp/src/main/kotlin/reader/windowsmin/app/ai/SseClient.kt:58:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+
+> Task :windowsApp:compileJava NO-SOURCE
+> Task :windowsApp:classes UP-TO-DATE
+> Task :windowsApp:jar
+> Task :windowsApp:startScripts
+> Task :windowsApp:installDist
+> Task :windowsApp:compileTestKotlin
+> Task :windowsApp:compileTestJava NO-SOURCE
+> Task :windowsApp:testClasses UP-TO-DATE
+> Task :windowsApp:test
+
+BUILD SUCCESSFUL in 4m 29s
+10 actionable tasks: 10 executed

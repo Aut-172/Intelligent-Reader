@@ -1,0 +1,16 @@
+START 2026/11/19 周四 23:14:08.15 
+错误 5: 拒绝访问。
+[1/6] copy and extract JDK 
+已复制         1 个文件。
+[2/6] copy and extract Gradle 
+已复制         1 个文件。
+[3/6] copy and extract WiX 
+已复制         1 个文件。
+[4/6] extract source 
+已复制         1 个文件。
+[5/6] build 
+BUILD_OK 
+[6/6] package 
+APPIMAGE_FAIL  
+PACKAGE2_START 2026/11/19 周四 23:25:14.50 
+PACKAGE_OK2 

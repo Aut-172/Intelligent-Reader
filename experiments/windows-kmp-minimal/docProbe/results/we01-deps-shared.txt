@@ -1,0 +1,400 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.7/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :shared:dependencies
+
+------------------------------------------------------------
+Project ':shared'
+------------------------------------------------------------
+
+allSourceSetsCompileDependenciesMetadata
+\--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+
+allTestSourceSetsCompileDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
+
+commonMainApi (n)
+No dependencies
+
+commonMainApiDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonMainCompileOnly (n)
+No dependencies
+
+commonMainCompileOnlyDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonMainImplementation (n)
+No dependencies
+
+commonMainImplementationDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonMainIntransitiveDependenciesMetadata
+No dependencies
+
+commonMainResolvableDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonMainRuntimeOnly (n)
+No dependencies
+
+commonTestApi (n)
+No dependencies
+
+commonTestApiDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonTestCompileOnly (n)
+No dependencies
+
+commonTestCompileOnlyDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonTestImplementation (n)
+\--- org.jetbrains.kotlin:kotlin-test (n)
+
+commonTestImplementationDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonTestIntransitiveDependenciesMetadata
+No dependencies
+
+commonTestResolvableDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+
+commonTestRuntimeOnly (n)
+No dependencies
+
+jvmApiElements - API elements for main. (n)
+No dependencies
+
+jvmApiElements-published (n)
+No dependencies
+
+jvmCompilationApi - API dependencies for 'jvm/main'. (n)
+No dependencies
+
+jvmCompilationCompileOnly - Compile only dependencies for 'jvm/main'. (n)
+No dependencies
+
+jvmCompilationImplementation - Implementation only dependencies for 'jvm/main'. (n)
+No dependencies
+
+jvmCompilationRuntimeOnly - Runtime only dependencies for 'jvm/main'. (n)
+No dependencies
+
+jvmCompileClasspath - Compile classpath for 'jvm/main'.
+\--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     \--- org.jetbrains:annotations:13.0
+
+jvmMainAnnotationProcessor - Annotation processors and their dependencies for source set 'jvm main'.
+No dependencies
+
+jvmMainApi (n)
+No dependencies
+
+jvmMainApiDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmMainCompileClasspath - Compile classpath for source set 'jvm main'.
+\--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     \--- org.jetbrains:annotations:13.0
+
+jvmMainCompileOnly - Compile only dependencies for source set 'jvm main'. (n)
+No dependencies
+
+jvmMainCompileOnlyDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmMainImplementation - Implementation only dependencies for source set 'jvm main'. (n)
+No dependencies
+
+jvmMainImplementationDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmMainIntransitiveDependenciesMetadata
+No dependencies
+
+jvmMainResolvableDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmMainRuntimeClasspath - Runtime classpath of source set 'jvm main'.
+\--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     \--- org.jetbrains:annotations:13.0
+
+jvmMainRuntimeOnly - Runtime only dependencies for source set 'jvm main'. (n)
+No dependencies
+
+jvmRuntimeClasspath - Runtime classpath of 'jvm/main'.
+\--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     \--- org.jetbrains:annotations:13.0
+
+jvmRuntimeElements - Elements of runtime for main. (n)
+No dependencies
+
+jvmRuntimeElements-published (n)
+No dependencies
+
+jvmSourcesElements - Source files of main compilation of jvm. (n)
+No dependencies
+
+jvmSourcesElements-published (n)
+No dependencies
+
+jvmTestAnnotationProcessor - Annotation processors and their dependencies for source set 'jvm test'.
+No dependencies
+
+jvmTestApi (n)
+No dependencies
+
+jvmTestApiDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmTestCompilationApi - API dependencies for 'jvm/test'. (n)
+No dependencies
+
+jvmTestCompilationCompileOnly - Compile only dependencies for 'jvm/test'. (n)
+\--- unspecified (n)
+
+jvmTestCompilationImplementation - Implementation only dependencies for 'jvm/test'. (n)
+\--- unspecified (n)
+
+jvmTestCompilationRuntimeOnly - Runtime only dependencies for 'jvm/test'. (n)
+\--- unspecified (n)
+
+jvmTestCompileClasspath - Compile classpath for 'jvm/test'.
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+|    \--- org.jetbrains:annotations:13.0
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+|    \--- org.jetbrains.kotlin:kotlin-test-junit:2.1.20
+|         +--- org.jetbrains.kotlin:kotlin-test:2.1.20 (*)
+|         \--- junit:junit:4.13.2
+|              \--- org.hamcrest:hamcrest-core:1.3
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-test:2.1.20 (*)
+
+jvmTestCompileOnly - Compile only dependencies for source set 'jvm test'. (n)
+No dependencies
+
+jvmTestCompileOnlyDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmTestImplementation - Implementation only dependencies for source set 'jvm test'. (n)
+No dependencies
+
+jvmTestImplementationDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmTestIntransitiveDependenciesMetadata
+No dependencies
+
+jvmTestResolvableDependenciesMetadata
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
++--- org.jetbrains.kotlin:kotlin-stdlib:{strictly 2.1.20} -> 2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-test:{strictly 2.1.20} -> 2.1.20 (c)
+
+jvmTestRuntimeClasspath - Runtime classpath of 'jvm/test'.
++--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+|    \--- org.jetbrains:annotations:13.0
++--- org.jetbrains.kotlin:kotlin-test -> 2.1.20
+|    +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+|    \--- org.jetbrains.kotlin:kotlin-test-junit:2.1.20
+|         +--- org.jetbrains.kotlin:kotlin-test:2.1.20 (*)
+|         \--- junit:junit:4.13.2
+|              \--- org.hamcrest:hamcrest-core:1.3
++--- org.jetbrains.kotlin:kotlin-test:2.1.20 (c)
+\--- org.jetbrains.kotlin:kotlin-test:2.1.20 (*)
+
+jvmTestRuntimeOnly - Runtime only dependencies for source set 'jvm test'. (n)
+No dependencies
+
+kotlinBuildToolsApiClasspath
+\--- org.jetbrains.kotlin:kotlin-build-tools-impl:{strictly 2.1.20} -> 2.1.20
+     +--- org.jetbrains.kotlin:kotlin-build-tools-api:2.1.20
+     +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     |    \--- org.jetbrains:annotations:13.0
+     +--- org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.20
+     |    +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    +--- org.jetbrains.kotlin:kotlin-script-runtime:2.1.20
+     |    +--- org.jetbrains.kotlin:kotlin-reflect:1.6.10
+     |    +--- org.jetbrains.kotlin:kotlin-daemon-embeddable:2.1.20
+     |    +--- org.jetbrains.intellij.deps:trove4j:1.0.20200330
+     |    \--- org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0
+     +--- org.jetbrains.kotlin:kotlin-compiler-runner:2.1.20
+     |    +--- org.jetbrains.kotlin:kotlin-daemon-client:2.1.20
+     |    |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    +--- org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0
+     |    \--- org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.20 (*)
+     +--- org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.1.20
+     |    +--- org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:2.1.20
+     |    |    +--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20
+     |    |    |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    |    +--- org.jetbrains.kotlin:kotlin-scripting-jvm:2.1.20
+     |    |    |    +--- org.jetbrains.kotlin:kotlin-script-runtime:2.1.20
+     |    |    |    +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    |    |    \--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20 (*)
+     |    |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     \--- org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:2.1.20 (*)
+
+kotlinCompilerClasspath
+\--- org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.20
+     +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     |    \--- org.jetbrains:annotations:13.0
+     +--- org.jetbrains.kotlin:kotlin-script-runtime:2.1.20
+     +--- org.jetbrains.kotlin:kotlin-reflect:1.6.10
+     +--- org.jetbrains.kotlin:kotlin-daemon-embeddable:2.1.20
+     +--- org.jetbrains.intellij.deps:trove4j:1.0.20200330
+     \--- org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0
+
+kotlinCompilerPluginClasspath
+No dependencies
+
+kotlinCompilerPluginClasspathJvmMain - Kotlin compiler plugins for compilation
+\--- org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.1.20
+     +--- org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:2.1.20
+     |    +--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20
+     |    |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     |    |         \--- org.jetbrains:annotations:13.0
+     |    +--- org.jetbrains.kotlin:kotlin-scripting-jvm:2.1.20
+     |    |    +--- org.jetbrains.kotlin:kotlin-script-runtime:2.1.20
+     |    |    +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    |    \--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20 (*)
+     |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+
+kotlinCompilerPluginClasspathJvmTest - Kotlin compiler plugins for compilation
+\--- org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.1.20
+     +--- org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:2.1.20
+     |    +--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20
+     |    |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     |    |         \--- org.jetbrains:annotations:13.0
+     |    +--- org.jetbrains.kotlin:kotlin-scripting-jvm:2.1.20
+     |    |    +--- org.jetbrains.kotlin:kotlin-script-runtime:2.1.20
+     |    |    +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    |    \--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20 (*)
+     |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+
+kotlinCompilerPluginClasspathMetadataMain - Kotlin compiler plugins for compilation
+\--- org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:2.1.20
+     +--- org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:2.1.20
+     |    +--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20
+     |    |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     |    |         \--- org.jetbrains:annotations:13.0
+     |    +--- org.jetbrains.kotlin:kotlin-scripting-jvm:2.1.20
+     |    |    +--- org.jetbrains.kotlin:kotlin-script-runtime:2.1.20
+     |    |    +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     |    |    \--- org.jetbrains.kotlin:kotlin-scripting-common:2.1.20 (*)
+     |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+     \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+
+kotlinKlibCommonizerClasspath
+\--- org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable:2.1.20
+     +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+     |    \--- org.jetbrains:annotations:13.0
+     \--- org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.20
+          +--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20 (*)
+          +--- org.jetbrains.kotlin:kotlin-script-runtime:2.1.20
+          +--- org.jetbrains.kotlin:kotlin-reflect:1.6.10
+          +--- org.jetbrains.kotlin:kotlin-daemon-embeddable:2.1.20
+          +--- org.jetbrains.intellij.deps:trove4j:1.0.20200330
+          \--- org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0
+
+kotlinNativeCompilerPluginClasspath
+No dependencies
+
+kotlinScriptDef - Script filename extensions discovery classpath configuration (n)
+No dependencies
+
+kotlinScriptDefExtensions
+No dependencies
+
+metadataApiElements - API elements for main. (n)
+No dependencies
+
+metadataCompilationApi - API dependencies for 'metadata/main'. (n)
+No dependencies
+
+metadataCompilationCompileOnly - Compile only dependencies for 'metadata/main'. (n)
+No dependencies
+
+metadataCompilationImplementation - Implementation only dependencies for 'metadata/main'. (n)
+No dependencies
+
+metadataCompilationRuntimeOnly - Runtime only dependencies for 'metadata/main'. (n)
+No dependencies
+
+metadataCompileClasspath - Compile classpath for 'metadata/main'.
+\--- org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+
+metadataSourcesElements - Source files of main compilation of metadata. (n)
+No dependencies
+
+testKotlinScriptDef - Script filename extensions discovery classpath configuration (n)
+No dependencies
+
+testKotlinScriptDefExtensions
+No dependencies
+
+(c) - A dependency constraint, not a dependency. The dependency affected by the constraint occurs elsewhere in the tree.
+(*) - Indicates repeated occurrences of a transitive dependency subtree. Gradle expands transitive dependency subtrees only once per project; repeat occurrences only display the root of the subtree, followed by this annotation.
+
+(n) - A dependency or dependency configuration that cannot be resolved.
+
+A web-based, searchable dependency report is available by adding the --scan option.
+
+BUILD SUCCESSFUL in 5s
+1 actionable task: 1 executed

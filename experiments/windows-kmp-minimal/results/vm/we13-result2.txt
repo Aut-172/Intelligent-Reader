@@ -1,0 +1,98 @@
+START 2026/11/18 ÖÜÈý 14:28:42.13 
+user=HYC-cleaning 
+[1] install 1.0.0 
+ins100_exit=1618 
+DIR100_OK 
+
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{631441D6-FED4-3ECD-BBDB-5F5A1DD86ABB}
+    Comments    REG_SZ    ReaderWinProbe
+    InstallLocation    REG_SZ    C:\Users\HYC-cleaning\AppData\Local\ReaderWinProbe\
+    DisplayName    REG_SZ    ReaderWinProbe
+
+ËÑË÷½áÊø: ÕÒµ½ 3 Æ¥Åä¡£
+W-E01 smoke run on Windows JVM target
+PASS  identity/same-content-different-name
+PASS  identity/same-name-changed-content
+PASS  retrieval/hit-count
+PASS  retrieval/hit-block-id
+PASS  degradation/local-search-only
+PASS  degradation/local-hit
+PASS  sync/idempotent-enqueue
+PASS  sync/uploaded-one
+PASS  sync/queue-drained
+PASS  conflict/note-keeps-copy
+PASS  citation/valid-same-version
+PASS  citation/stale-on-new-version
+PASS  citation/stale-on-parser-upgrade
+PASS  citation/locator-fails-on-reorder
+PASS  diag/forbidden-attrs-dropped
+PASS  diag/bundle-scanner-clean
+PASS  diag/preview-one-line
+RESULT passed=17 failed=0
+RUN100_OK 
+[2] upgrade 1.0.1 
+ins101_exit=1618 
+
+ËÑË÷½áÊø: ÕÒµ½ 0 Æ¥Åä¡£
+W-E01 smoke run on Windows JVM target
+PASS  identity/same-content-different-name
+PASS  identity/same-name-changed-content
+PASS  retrieval/hit-count
+PASS  retrieval/hit-block-id
+PASS  degradation/local-search-only
+PASS  degradation/local-hit
+PASS  sync/idempotent-enqueue
+PASS  sync/uploaded-one
+PASS  sync/queue-drained
+PASS  conflict/note-keeps-copy
+PASS  citation/valid-same-version
+PASS  citation/stale-on-new-version
+PASS  citation/stale-on-parser-upgrade
+PASS  citation/locator-fails-on-reorder
+PASS  diag/forbidden-attrs-dropped
+PASS  diag/bundle-scanner-clean
+PASS  diag/preview-one-line
+RESULT passed=17 failed=0
+RUN101_OK 
+[3] uninstall 
+uninstall_exit=1618 
+DIR_AFTER=YES 
+MENU_AFTER=NO 
+
+ËÑË÷½áÊø: ÕÒµ½ 0 Æ¥Åä¡£
+DONE 2026/11/18 ÖÜÈý 14:28:55.96 
+ins101_exit=0 
+
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DA79E811-8248-3351-8018-1FBAB476AC8C}
+    Comments    REG_SZ    ReaderWinProbe
+    InstallLocation    REG_SZ    C:\Users\HYC-cleaning\AppData\Local\ReaderWinProbe\
+    DisplayName    REG_SZ    ReaderWinProbe
+
+ËÑË÷½áÊø: ÕÒµ½ 3 Æ¥Åä¡£
+W-E01 smoke run on Windows JVM target
+PASS  identity/same-content-different-name
+PASS  identity/same-name-changed-content
+PASS  retrieval/hit-count
+PASS  retrieval/hit-block-id
+PASS  degradation/local-search-only
+PASS  degradation/local-hit
+PASS  sync/idempotent-enqueue
+PASS  sync/uploaded-one
+PASS  sync/queue-drained
+PASS  conflict/note-keeps-copy
+PASS  citation/valid-same-version
+PASS  citation/stale-on-new-version
+PASS  citation/stale-on-parser-upgrade
+PASS  citation/locator-fails-on-reorder
+PASS  diag/forbidden-attrs-dropped
+PASS  diag/bundle-scanner-clean
+PASS  diag/preview-one-line
+RESULT passed=17 failed=0
+RUN101_OK 
+[3] uninstall 
+uninstall_exit=1 
+DIR_AFTER=YES 
+MENU_AFTER=YES 
+
+ËÑË÷½áÊø: ÕÒµ½ 0 Æ¥Åä¡£
+DONE 2026/11/18 ÖÜÈý 14:29:29.89 
