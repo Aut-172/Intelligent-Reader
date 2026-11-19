@@ -1,0 +1,31 @@
+@startuml FLOW-04a-双端同步一致性简图
+' 课堂汇报拆分图，来源：../FLOW-04-双端阅读进度与笔记同步时序图.puml
+title 双端同步一致性主流程
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "Android" as A
+participant "身份与同步单元" as S
+database "PostgreSQL\n当前态 + 变更流" as DB
+participant "Windows" as W
+
+A -> A : 本地写入 SyncOperation\noperationId + baseRevision
+A -> S : push(operations, cursor)
+S -> DB : 单事务校验、更新当前态、追加变更流
+DB --> S : revision + 幂等结果
+S --> A : ack + nextCursor
+
+W -> S : pull(cursor)
+S -> DB : 查询账号级增量变更
+DB --> S : changes + tombstone
+S --> W : 增量结果 + nextCursor
+W -> W : 合并进度；笔记冲突保留副本
+
+alt cursor 已过期
+  S --> W : REBASE_REQUIRED
+  W -> W : 重新基线，同时保留未确认本地修改
+end
+@enduml

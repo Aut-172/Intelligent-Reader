@@ -1,0 +1,23 @@
+@startuml FLOW-03b-服务划分后问答协作课堂简图
+' 课堂汇报简图，来源：FLOW-03a-文档到可核验回答数据流.puml
+title 服务划分后的问答协作
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 18
+skinparam roundCorner 10
+skinparam componentStyle rectangle
+top to bottom direction
+
+component "1 客户端本地检索与筛选\n全文 / BM25 + 向量召回" as Search #E8F3EF
+component "2 客户端最少证据外发\n权限过滤、逐文件同意、绑定版本" as Evidence #FFF3CD
+component "3 云端 AI / RAG 网关\nREST/JSON 请求、SSE 流式返回、轮询降级" as Gateway #FFF1E5
+component "4 客户端引用核验\n证据白名单、双锚点、回跳原文" as Verify #E1F5FE
+
+Search --> Evidence : 候选片段
+Evidence --> Gateway : 最少证据包
+Gateway --> Verify : 回答与引用编号
+
+note right of Evidence
+原文、完整索引和未经授权片段不进入云端。
+end note
+@enduml

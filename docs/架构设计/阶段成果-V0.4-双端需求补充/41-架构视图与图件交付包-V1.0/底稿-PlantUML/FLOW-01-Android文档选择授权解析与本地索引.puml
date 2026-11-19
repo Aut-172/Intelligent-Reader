@@ -1,0 +1,70 @@
+@startuml FLOW-01-Android文档选择授权解析与本地索引
+title 图 FLOW-01 时序图·Android文档选择、授权、解析与本地混合索引\n(关联：UC01, UC02 | 决策：D-05, D-20, D-22, D-23, D-26 | 质量场景：QA-27, QA-28 | ADR-022, ADR-023)
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "Android 个人用户" as User
+boundary "ComposeReaderUI\n(移动端交互界面)" as UI
+control "AndroidSAFHandler\n(平台文件框架适配)" as SAF
+control "DocumentImportCoordinator\n(客户端导入协调器)" as Coord
+control "AndroidDocParserAdapter\n(PDF/文档解析组件)" as Parser
+control "AndroidOCRAdapter\n(移动端 OCR 适配器)" as OCR
+control "LocalHybridIndexEngine\n(本地混合检索索引引擎)" as Indexer
+database "LocalRoomDB\n(本地 SQLite 存储)" as LocalDB
+control "AndroidWorkManager\n(后台持久任务)" as WorkMgr
+
+User -> UI : 点击“导入文档”并从系统文件选择器选取 PDF
+UI -> SAF : openDocumentTree / ACTION_OPEN_DOCUMENT
+SAF --> User : 弹出系统授权对话框 (Storage Access Framework)
+User -> SAF : 确认授权读取此文档
+SAF -> SAF : takePersistableUriPermission(contentUri)\n[获得持久读写权限]
+SAF --> UI : 返回持久化 contentUri
+
+UI -> Coord : importDocument(contentUri)
+Coord -> Coord : 计算文件内容精确哈希 (SHA-256)\n生成不可逆 SourceHash
+
+Coord -> LocalDB : queryDocumentByIdentity(SourceHash)
+alt [本地已存在相同内容哈希的有效文档]
+    LocalDB --> Coord : 返回现有 docId, versionId
+    Coord --> UI : 提示已导入，直接跳转阅读页面 (秒开)
+else [全新文档或内容发生变化]
+    Coord -> LocalDB : createDocumentEntry(docId, SourceHash, ContentUri)
+    Coord -> WorkMgr : enqueueParsingTask(docId, versionId)
+    WorkMgr --> Coord : Task Enqueued (持久任务注册)
+    Coord --> UI : 返回“导入成功，正在后台解析与索引”，展示进度条
+end
+
+== 异步后台解析与 OCR 降级链路 (WorkManager 工作线程) ==
+
+WorkMgr -> Parser : parseDocument(contentUri)
+Parser -> Parser : 读取 PDF 页面树、抽取原生文本块与 BBox 坐标
+
+alt [扫描件 / 无法抽取原生字符 / 低置信度页面]
+    Parser -> OCR : requestOCR(pageBitmap, PageNumber)
+    OCR -> OCR : 移动端推理，输出识别文字、置信度与 NormalizedRect
+    OCR --> Parser : 返回 OCRText, Confidence, Rect
+    Parser -> Parser : 明确标记 OCR 来源与置信度\n(严禁静默混入原生文本)
+else [复杂版式或无法稳定提取高精坐标]
+    Parser -> Parser : 标记显式降级原因 (DegradationReason: PageOnlyAnchor)
+end
+
+Parser --> WorkMgr : 输出统一文档模型 DocumentPage(pages, blocks, bboxes, parserVer)
+
+WorkMgr -> Indexer : buildHybridIndex(docId, versionId, pages)
+Indexer -> Indexer : 1. 分词并写入本地 BM25/全文索引表
+Indexer -> Indexer : 2. 调用本地轻量 Embedding 推理，构建固定中文嵌入向量
+Indexer -> LocalDB : 事务写入 DocumentVersion、页面元数据、混合索引与锚点
+Indexer --> WorkMgr : 索引构建完成 (indexed)
+
+WorkMgr -> LocalDB : updateTaskState(docId, STATUS_READY)
+WorkMgr --> UI : 发送本地通知 / 广播 StateFlow 更新
+UI --> User : 界面更新为“可搜索、可问答”，允许阅读与选区高亮
+
+note over Coord, LocalDB
+  **负向架构约束复核 (D-05, D-17, D-20):**
+  1. 源文件、解析文本树、BBox 与混合索引绝对保留在 Android 沙箱内，禁止上传云端！
+  2. 即使网络断开，上述导入、阅读与本地关键词搜索功能完全可用。
+end note
+
+@enduml

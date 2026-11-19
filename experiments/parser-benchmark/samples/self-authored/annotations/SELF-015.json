@@ -1,0 +1,14 @@
+{
+  "sample_id": "SELF-015",
+  "fixed_queries": [
+    "图片样本",
+    "嵌入图片"
+  ],
+  "expected_evidence_fragments": [
+    "图片样本",
+    "嵌入图片"
+  ],
+  "reference_notes": "A-E02 supplementary sample",
+  "annotation_version": 1,
+  "source": "project-authored"
+}

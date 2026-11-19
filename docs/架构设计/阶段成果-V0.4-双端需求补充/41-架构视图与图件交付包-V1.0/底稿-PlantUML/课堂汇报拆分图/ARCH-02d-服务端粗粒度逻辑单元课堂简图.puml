@@ -1,0 +1,37 @@
+@startuml ARCH-02d-服务端粗粒度逻辑单元课堂简图
+' 课堂汇报简图，来源：ARCH-02b-服务端逻辑分层与职责图.puml
+title 服务端：模块化粗粒度逻辑单元 + 独立 Worker
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 20
+skinparam roundCorner 10
+skinparam componentStyle rectangle
+top to bottom direction
+
+cloud "Android / Windows\n客户端" as Client #E1F5FE
+component "HTTPS Ingress\nTLS、限流、路由" as Ingress #ECEFF1
+
+package "少量粗粒度逻辑单元" #F8F9FA {
+  component "身份与同步\n账号、设备、revision、cursor" as Sync #E8F3EF
+  component "AI / RAG 网关\n证据合同、ModelAdapter" as AI #FFF1E5
+  component "任务与审计 Worker\nlease、重试、清理" as Worker #EDE7F6
+  Sync -[hidden]right-> AI
+  AI -[hidden]right-> Worker
+}
+
+database "PostgreSQL\n当前态、变更流、任务表" as PG #ECEFF1
+cloud "受控模型 API" as Model #FFF3E0
+
+Client --> Ingress : REST/JSON + SSE
+Ingress --> Sync : 同步 API
+Ingress --> AI : 问答 API
+Sync --> PG : 单事务
+AI --> PG : 请求状态
+Worker --> PG : lease
+AI -right-> Model : 适配器
+
+note bottom of Worker
+一期可同机部署，不采用细粒度微服务群。
+长任务持久化，但不默认引入消息代理或独立事件总线。
+end note
+@enduml

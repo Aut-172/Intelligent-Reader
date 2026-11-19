@@ -11,17 +11,25 @@ android {
         applicationId = "reader.androidmin.app"
         minSdk = 31
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("../android-release.jks")
+            storePassword = "androidmin"
+            keyAlias = "release"
+            keyPassword = "androidmin"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            // 侧载 release：默认复用 debug 签名以保证覆盖安装可复现；
-            // 若要验证正式自签名，在 local.properties 或环境变量提供 keystore 后替换此处。
-            signingConfig = signingConfigs.getByName("debug")
+            // 正式自签名（课程演示用；凭据仅本地，勿提交生产）。
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

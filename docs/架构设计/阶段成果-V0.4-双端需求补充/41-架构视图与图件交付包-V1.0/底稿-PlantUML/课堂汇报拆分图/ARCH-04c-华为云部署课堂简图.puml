@@ -1,0 +1,42 @@
+@startuml ARCH-04c-华为云部署课堂简图
+' 课堂汇报拆分图，来源：../ARCH-04b-候选部署图-华为云能力映射.puml
+!pragma layout smetana
+title 华为云部署与能力映射
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam roundCorner 8
+skinparam componentStyle rectangle
+left to right direction
+
+node "用户设备\nAndroid 12+ / Windows 11" as Client #E8F3EF
+
+cloud "华为云" as Huawei #EDE7F6 {
+  node "ECS 或 CCE" as Compute {
+    component "Ingress" as Ingress
+    component "身份与同步" as Sync
+    component "AI / RAG 网关" as AI
+    component "任务 Worker" as Worker
+  }
+  database "RDS for PostgreSQL\n当前态、变更流、任务表" as RDS
+  component "DEW / KMS\n密钥与凭据" as KMS
+  component "LTS + AOM / APM\n内容无关日志、指标、追踪" as Obs
+  component "OBS / CSS\n可选扩展能力\n一期不存原文和本地索引" as Optional #F8F9FA
+}
+
+cloud "受控模型 API" as Model #FFF3E0
+
+Client --> Ingress : HTTPS 443
+Ingress --> Sync
+Ingress --> AI
+Sync --> RDS
+AI --> RDS
+Worker --> RDS
+KMS ..> Compute : 启动时注入
+Compute ..> Obs : 白名单遥测
+AI --> Model : HTTPS
+
+note bottom of Huawei
+业务合同保持云中立。三个责任单元一期可部署在同一计算节点，
+后续依据资源、可用性和隔离证据再拆分。
+end note
+@enduml

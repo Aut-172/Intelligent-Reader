@@ -1,0 +1,63 @@
+@startuml FLOW-08-Markdown与PDF主动导出及版本引用保留时序图
+title 图 FLOW-08 时序图·Markdown与PDF主动导出及版本引用保留时序图\n(关联：UC06 | 决策：D-01, D-10, D-22, D-25 | 质量场景：QA-27, QA-30 | ADR-022, ADR-025)
+autonumber
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+
+actor "个人用户" as User
+boundary "ReaderUI\n(阅读器与导出界面)" as UI
+control "ExportCoordinator\n(统一导出协调器)" as Coord
+database "LocalStorage\n(本地笔记、引用与版本库)" as Store
+control "ExportFormatter\n(统一格式化与版式引擎)" as Formatter
+control "PlatformStorageBridge\n(双端系统文件写入适配器)" as Bridge
+
+User -> UI : 点击“导出笔记与分析”，选择目标格式 (Markdown 或 PDF)
+UI -> Coord : initiateExport(docId, format: MD_OR_PDF, scope: ALL_NOTES_WITH_CITATIONS)
+
+Coord -> Store : queryExportPayload(docId)
+Store --> Coord : 返回文档信息：\n- SourceHash (不可逆内容哈希)\n- DocumentVersionId & ParserVersion\n- 笔记列表 (NoteList)\n- 关联引用列表 (CitationRefList，含结构锚点、字符锚点与 BBox)
+
+== 阶段 1：统一导出语义生成与引用溯源绑定 (D-10, D-25) ==
+
+Coord -> Formatter : formatExportDocument(documentMeta, notes, citations, format)
+Formatter -> Formatter : **构建统一文档溯源头 (Provenance Header):**\n- 文档名称与原哈希: SHA-256: e3b0c442...\n- 关联版本: Ver-1.0 (Parser: v1.2)\n- 导出时间戳与导出设备标识
+
+loop 遍历所有笔记与摘录
+    Formatter -> Formatter : 编排正文结构，生成层次化笔记列表
+    Formatter -> Formatter : **嵌入可追溯引用信息 (Citation Provenance):**\n- 引用锚点: 第 42 页，第 3.2 节 [NormalizedRect: x:0.12, y:0.45]\n- 引用原文摘录片段 (Quote text)
+    alt [该引用处于 stale 状态]
+        Formatter -> Formatter : 明确追加注记：“[警告：该引用为陈旧版本快照，源文档已变更]”
+    end
+end
+
+Formatter --> Coord : 生成格式化文件流 (MD 纯文本 / PDF 矢量排版数据)
+
+== 阶段 2：平台安全写入授权与文件落盘 (D-02, D-10) ==
+
+Coord -> Bridge : requestPlatformWritePermission(targetFileName, format)
+
+alt [运行环境：Android 12+]
+    Bridge -> UI : 调用 ACTION_CREATE_DOCUMENT 系统文件保存对话框
+    User -> Bridge : 选取保存目录 (如 /Download/Notes.pdf) 并授权
+    Bridge --> Coord : 获得输出流 targetOutputStream (通过 SAF ContentResolver)
+else [运行环境：Windows 11]
+    Bridge -> UI : 弹出 Win32 SaveFileDialog 保存对话框
+    User -> Bridge : 选择保存路径 (如 D:\\MyNotes\\Export.md)
+    Bridge --> Coord : 获得输出文件句柄 FileStream
+end
+
+Coord -> Formatter : streamWriteToTarget(targetOutputStream)
+Formatter -> Bridge : 流式分块写入数据 (避免大文档内存溢出)
+Bridge --> Coord : 写入完成，关闭文件句柄
+
+Coord --> UI : 导出成功，返回输出文件绝对路径 / URI
+UI --> User : 界面弹出成功通知：“导出完成！”，提供按钮：“打开文件” / “在文件夹中查看”
+
+note over Coord, Bridge
+  **一期导出范围与安全边界复核 (D-01, D-10):**
+  1. 导出的 Markdown 与 PDF 严格由用户在本地主动触发并指定保存目录。
+  2. 严禁自动生成任何 Web 公开分享链接、云端临时共享地址或社交媒体快捷分享入口。
+  3. 导出的核心价值在于完整保留原文档版本来源与引用溯源锚点，保证学术与工程严谨性。
+end note
+
+@enduml

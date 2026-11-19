@@ -1,0 +1,27 @@
+@startuml ARCH-02c-客户端组合架构课堂简图
+' 课堂汇报简图，来源：ARCH-02a-客户端逻辑分层图.puml
+title 客户端：分层架构 + 端口/适配器 + 本地优先
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 20
+skinparam roundCorner 10
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+top to bottom direction
+
+component "表现与交互层\nAndroid / Windows 原生界面\n阅读、选区、同意、冲突提示" as UI #E1F5FE
+component "应用编排层\n导入与版本识别\n检索、问答与同步编排" as App #F1F8E9
+component "领域与合同层\nDocumentVersion / Citation\nSyncOperation / 证据合同" as Domain #FFF3CD
+component "平台适配层\n文件、文档、OCR\n数据库、安全存储、持久任务" as Adapter #EDE7F6
+
+database "端侧本地数据\n原文、解析结果、全文与向量索引、笔记" as Local #ECEFF1
+
+UI -right-> App
+App -down-> Domain
+Domain -right-> Adapter : 端口
+Adapter -down-> Local
+
+note bottom of Domain
+文档解析、OCR、索引和证据选择主要在客户端完成。
+end note
+@enduml

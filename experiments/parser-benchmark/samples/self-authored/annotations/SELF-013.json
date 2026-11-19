@@ -1,0 +1,14 @@
+{
+  "sample_id": "SELF-013",
+  "fixed_queries": [
+    "旋转页",
+    "Rotated page anchor"
+  ],
+  "expected_evidence_fragments": [
+    "旋转页",
+    "Rotated page anchor"
+  ],
+  "reference_notes": "A-E02 supplementary sample",
+  "annotation_version": 1,
+  "source": "project-authored"
+}

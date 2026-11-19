@@ -1,0 +1,24 @@
+@startuml FLOW-04b-服务划分后同步协作课堂简图
+' 课堂汇报简图，来源：FLOW-04a-双端同步一致性简图.puml
+title 服务划分后的同步协作
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 18
+skinparam roundCorner 10
+skinparam componentStyle rectangle
+top to bottom direction
+
+component "1 客户端原子保存业务变化\n持久 SyncOperation + operationId" as Local #E1F5FE
+component "2 身份与同步单元接收 push\n校验会话、幂等、revision、tombstone" as Sync #E8F3EF
+database "3 PostgreSQL 单事务\n更新当前态、固化幂等结果、追加变更流" as PG #ECEFF1
+component "4 另一客户端 pull 并合并\n进度按顺序，笔记冲突保留副本" as Merge #FFF3CD
+
+Local --> Sync : REST/JSON
+Sync --> PG : 单事务
+PG --> Merge : cursor 增量
+
+note right of Merge
+cursor 失效返回 REBASE_REQUIRED。
+重新基线时保留未确认的本地操作。
+end note
+@enduml
