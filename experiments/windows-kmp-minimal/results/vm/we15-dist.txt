@@ -1,0 +1,18 @@
+ 驱动器 C 中的卷没有标签。
+ 卷的序列号是 16A9-3D35
+
+ C:\we15build\dist 的目录
+
+2026/11/18  14:11    <DIR>          .
+2026/11/18  14:05    <DIR>          ..
+2026/11/18  14:06    <DIR>          ReaderWinProbe
+2026/11/18  14:08        71,300,856 ReaderWinProbe-1.0.0.msi
+2026/11/18  14:11        71,300,856 ReaderWinProbe-1.0.1.msi
+               2 个文件    142,601,712 字节
+               3 个目录 109,560,578,048 可用字节
+SHA256 的 C:\we15build\dist\ReaderWinProbe-1.0.0.msi 哈希:
+4b66157f06912a92fe452280d4f6efb81d383cd7fc6dffd23d9241a0cdf9f553
+CertUtil: -hashfile 命令成功完成。
+SHA256 的 C:\we15build\dist\ReaderWinProbe-1.0.1.msi 哈希:
+3b3ad401a40ba2fd38485a2e2f571891b7102e1b85296e17ef35703afcb9e2bc
+CertUtil: -hashfile 命令成功完成。

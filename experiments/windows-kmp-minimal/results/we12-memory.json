@@ -1,0 +1,14 @@
+﻿{
+    "app_image":  {
+                      "exe":  "ReaderWinProbe.exe",
+                      "exit":  null,
+                      "peak_mb":  7.9,
+                      "elapsed_ms":  566
+                  },
+    "pdf_render_java":  {
+                            "exe":  "java.exe",
+                            "exit":  null,
+                            "peak_mb":  123.7,
+                            "elapsed_ms":  535
+                        }
+}

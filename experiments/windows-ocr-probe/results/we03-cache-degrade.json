@@ -1,0 +1,11 @@
+﻿{
+    "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-render.png",
+    "hash":  "659332CF5B8A76281D0E632019DB41690A6B96716DBA4D669928F5AAF4E06BBF",
+    "cache_hit_first":  false,
+    "first_ms":  125.5,
+    "second_ms":  34.7,
+    "text_match":  true,
+    "degraded_on_missing":  true,
+    "degrade_reason":  "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\"",
+    "cancel_api":  "Windows.Media.Ocr.RecognizeAsync(IAsyncOperation) has no CancellationToken; caller must abandon the task."
+}

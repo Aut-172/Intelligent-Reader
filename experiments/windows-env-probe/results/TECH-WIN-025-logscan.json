@@ -1,0 +1,53 @@
+﻿{
+    "scanned_roots":  [
+                          "C:\\Users\\HYC-1\\AppData\\Local\\ReaderWinProbe",
+                          "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps",
+                          "C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive",
+                          "C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportQueue"
+                      ],
+    "temp_filter":  "reader|winprobe|we1[0-9]",
+    "files_scanned":  14,
+    "hits":  [
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\java.exe.10896.dmp",
+                     "pattern":  "user_path",
+                     "count":  6
+                 },
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\java.exe.11072.dmp",
+                     "pattern":  "user_path",
+                     "count":  6
+                 },
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\java.exe.14540.dmp",
+                     "pattern":  "user_path",
+                     "count":  4
+                 },
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\java.exe.17808.dmp",
+                     "pattern":  "user_path",
+                     "count":  8
+                 },
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\java.exe.17856.dmp",
+                     "pattern":  "user_path",
+                     "count":  4
+                 },
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\java.exe.19748.dmp",
+                     "pattern":  "user_path",
+                     "count":  5
+                 },
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\java.exe.24716.dmp",
+                     "pattern":  "user_path",
+                     "count":  2
+                 },
+                 {
+                     "file":  "C:\\Users\\HYC-1\\AppData\\Local\\CrashDumps\\javac.exe.3968.dmp",
+                     "pattern":  "user_path",
+                     "count":  6
+                 }
+             ],
+    "hit_files":  8
+}

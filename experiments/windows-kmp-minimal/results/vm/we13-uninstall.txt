@@ -1,0 +1,6 @@
+uninstall_exit=1605 
+DIR_AFTER=YES 
+MENU_AFTER=YES 
+
+หัห๗ฝแส๘: ีาตฝ 0 ฦฅลไกฃ
+DONE 

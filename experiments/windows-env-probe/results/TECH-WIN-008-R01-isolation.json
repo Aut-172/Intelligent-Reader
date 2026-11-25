@@ -1,0 +1,15 @@
+﻿{
+    "user":  "readerlab",
+    "time":  "2026-11-18T01:56:30.4122849+08:00",
+    "hyc1Profile_exists":  true,
+    "hyc1Profile_listable":  false,
+    "hyc1Profile_error":  "UnauthorizedAccessException",
+    "hyc1Local_exists":  false,
+    "hyc1Local_listable":  false,
+    "hyc1Local_error":  "UnauthorizedAccessException",
+    "hyc1Protect_exists":  false,
+    "hyc1Protect_listable":  false,
+    "hyc1Protect_error":  "UnauthorizedAccessException",
+    "workspaceDocs_exists":  true,
+    "workspaceDocs_listable":  true
+}

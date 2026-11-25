@@ -1,0 +1,47 @@
+openjdk version "21.0.2" 2024-01-16
+OpenJDK Runtime Environment (build 21.0.2+13-58)
+OpenJDK 64-Bit Server VM (build 21.0.2+13-58, mixed mode, sharing)
+
+------------------------------------------------------------
+Gradle 8.14.7
+------------------------------------------------------------
+
+Build time:    2026-11-11 07:23:35 UTC
+Revision:      dfb1f683277078a276f14468c4ea8e756ad9128d
+
+Kotlin:        2.0.21
+Groovy:        3.0.25
+Ant:           Apache Ant(TM) version 1.10.15 compiled on August 25 2024
+Launcher JVM:  21.0.2 (Oracle Corporation 21.0.2+13-58)
+Daemon JVM:    C:\we15build\tools\jdk-21.0.2 (no JDK specified, using current Java home)
+OS:            Windows 11 10.0 amd64
+
+Windows Installer XML Toolset Compiler version 3.14.1.8722
+Copyright (c) .NET Foundation and contributors. All rights reserved.
+
+ usage:  candle.exe [-?] [-nologo] [-out outputFile] sourceFile [sourceFile ...] [@responseFile]
+
+   -arch      set architecture defaults for package, components, etc.
+              values: x86, x64, or ia64 (default: x86)
+   -d<name>[=<value>]  define a parameter for the preprocessor
+   -ext <extension>  extension assembly or "class, assembly"
+   -fips      enables FIPS compliant algorithms
+   -I<dir>    add to include search path
+   -nologo    skip printing candle logo information
+   -o[ut]     specify output file (default: write to current directory)
+   -p<file>   preprocess to a file (or stdout if no file supplied)
+   -pedantic  show pedantic messages
+   -platform  (deprecated alias for -arch)
+   -sfdvital  suppress marking files as Vital by default (deprecated)
+   -ss        suppress schema validation of documents (performance boost) (deprecated)
+   -sw[N]     suppress all warnings or a specific message ID
+              (example: -sw1009 -sw1103)
+   -swall     suppress all warnings (deprecated)
+   -trace     show source trace for errors, warnings, and verbose messages (deprecated)
+   -v         verbose output
+   -wx[N]     treat all warnings or a specific message ID as an error
+              (example: -wx1009 -wx1103)
+   -wxall     treat all warnings as errors (deprecated)
+   -? | -help this help information
+
+For more information see: http://wixtoolset.org/

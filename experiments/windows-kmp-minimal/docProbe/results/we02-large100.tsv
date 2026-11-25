@@ -1,0 +1,2 @@
+sample	pages	runs	chars	bboxCoverage	renderW	renderH	renderMs	contractMs	fileBytes
+LARGE-100P	100	2000	84940	1.000	595	841	156	434	35402

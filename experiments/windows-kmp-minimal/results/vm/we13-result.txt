@@ -1,0 +1,44 @@
+W-E13 CLEAN VM TEST 
+computer=HYC-CLEAN user=HYC-cleaning 
+[1] app-image 
+W-E01 smoke run on Windows JVM target
+PASS  identity/same-content-different-name
+PASS  identity/same-name-changed-content
+PASS  retrieval/hit-count
+PASS  retrieval/hit-block-id
+PASS  degradation/local-search-only
+PASS  degradation/local-hit
+PASS  sync/idempotent-enqueue
+PASS  sync/uploaded-one
+PASS  sync/queue-drained
+PASS  conflict/note-keeps-copy
+PASS  citation/valid-same-version
+PASS  citation/stale-on-new-version
+PASS  citation/stale-on-parser-upgrade
+PASS  citation/locator-fails-on-reorder
+PASS  diag/forbidden-attrs-dropped
+PASS  diag/bundle-scanner-clean
+PASS  diag/preview-one-line
+RESULT passed=17 failed=0
+APPIMAGE_RUN_OK 
+[2] install 1.0.0 
+ins100_exit=1603 
+
+搜索结束: 找到 0 匹配。
+错误: 系统找不到指定的注册表项或值。
+INSTALL_DIR_MISSING 
+系统找不到指定的路径。
+RUN100_FAIL 
+[3] upgrade 1.0.1 
+ins101_exit=1603 
+
+搜索结束: 找到 0 匹配。
+系统找不到指定的路径。
+RUN101_FAIL 
+[4] uninstall 
+unins_exit=1605 
+DIR_AFTER_UNINSTALL=NO 
+MENU_AFTER_UNINSTALL=NO 
+
+搜索结束: 找到 0 匹配。
+DONE 

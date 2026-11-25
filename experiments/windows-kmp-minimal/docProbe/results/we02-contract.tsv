@@ -1,0 +1,5 @@
+sample	pages	runs	chars	charRatioVsPyMuPDF	bboxCoverage	renderW	renderH	renderMs	contractMs	sha12	degradations
+SELF-001	1	17	276	0.942	1.000	595	841	88	1807	0391dd982a1c	
+SELF-002	2	32	539	0.942	1.000	595	841	15	42	614c8a0cd2fe	
+SELF-003	1	17	270	0.941	1.000	595	841	9	27	e0776c95d8ff	
+SELF-004	2	0	0	0.000	0.000	793	1122	270	289	ab008a1879ed	NO_TEXT_LAYER

@@ -1,0 +1,49 @@
+﻿{
+    "image":  "F:\\#_Working_Area\\Intelligent-Reader\\experiments\\windows-ocr-probe\\results\\we03-rot-90-fixed.png",
+    "languages":  [
+                      "zh-Hans-CN"
+                  ],
+    "elapsed_ms":  67.3,
+    "line_count":  1,
+    "word_count":  4,
+    "text":  "Reader Studio W-E03 2026",
+    "lines":  [
+                  "Reader Studio W-E03 2026"
+              ],
+    "words":  [
+                  {
+                      "text":  "Reader",
+                      "x":  132,
+                      "y":  429,
+                      "w":  162,
+                      "h":  40
+                  },
+                  {
+                      "text":  "Studio",
+                      "x":  313,
+                      "y":  429,
+                      "w":  149,
+                      "h":  40
+                  },
+                  {
+                      "text":  "W-E03",
+                      "x":  481,
+                      "y":  430,
+                      "w":  155,
+                      "h":  39
+                  },
+                  {
+                      "text":  "2026",
+                      "x":  658,
+                      "y":  430,
+                      "w":  113,
+                      "h":  39
+                  }
+              ],
+    "checks":  {
+                   "Reader":  true,
+                   "2026":  true
+               },
+    "passed":  2,
+    "total":  2
+}
