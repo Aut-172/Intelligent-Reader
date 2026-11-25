@@ -1,82 +1,77 @@
 @startuml ARCH-04a-候选部署图-云中立基线
-title 图 ARCH-04a 候选部署图·云中立基线（UML 部署图 / 状态：Proposed / ADR-014, ADR-035）
+title 图 ARCH-04a 候选部署图·云中立基线（华为云 CodeArts Modeling 规范标准）
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
-skinparam roundCorner 8
+skinparam roundCorner 6
 skinparam linetype ortho
 
-node "用户手持终端\n<<device>> Android 12+ 移动设备" as Node_Android #F1F8E9 {
-    node "Android OS 沙箱运行环境" as Env_Android {
-        artifact "IntelligentReader.apk\n<<executable package>>\n[签名 release 构建包]" as Art_APK
-        database "应用私有目录文件存储\n(源文档副本、本地 SQLite、混合索引)" as Store_Android
-        Art_APK --> Store_Android : 内部读写
-    }
+skinparam node {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 11
+  ArrowColor #1565C0
+  ArrowThickness 1.2
 }
 
-node "用户桌面终端\n<<device>> Windows 11 PC 电脑" as Node_Windows #E1F5FE {
-    node "Windows 11 桌面运行环境" as Env_Windows {
-        artifact "IntelligentReader-win-x64.zip / setup.exe\n<<executable package>>\n[release 绿色演示包/安装包]" as Art_EXE
-        database "AppData/Local 目录文件存储\n(源文档授权、本地 SQLite、混合索引)" as Store_Win
-        Art_EXE --> Store_Win : 内部读写
-    }
+skinparam artifact {
+  BackgroundColor #FAFAFA
+  BorderColor #455A64
+  FontSize 10
 }
 
-node "云中立计算节点\n<<node>> 标准 Linux 主机 (Ubuntu 22.04 LTS / 容器宿主机)\n[课程一期单节点同机部署验证基线 (D-35)]" as Node_Server #EDE7F6 {
-    
-    node "反向代理网关\n<<executionEnvironment>> Ingress Proxy" as Env_Proxy {
-        artifact "Caddy / Nginx\n[TLS 1.3 证书终结, 路由分发, 限流]" as Art_Proxy
-    }
-
-    node "Java 21 / 容器运行时环境\n<<executionEnvironment>> Application Runtime" as Env_AppRuntime {
-        artifact "sync-service.jar\n<<artifact>>\n[身份验证与数据同步单元]" as Art_Sync
-        artifact "rag-gateway.jar\n<<artifact>>\n[证据包校验与模型适配网关]" as Art_AI
-        artifact "task-worker.jar\n<<artifact>>\n[后台持久任务调度与审计执行器]" as Art_Worker
-    }
-
-    node "数据库运行环境\n<<executionEnvironment>> Database Runtime" as Env_DBRuntime {
-        database "PostgreSQL 16 Engine\n<<database system>>" as PG_Inst {
-            artifact "intelligent_reader_db\n(账号表, 变更流表, 任务表, 幂等记录)" as Art_DB_Data
-        }
-    }
-
-    node "安全与可观测配套环境\n<<executionEnvironment>> Support Services" as Env_Support {
-        artifact "秘密与环境变量注入\n(OS Secret / .env 隔离配置)" as Art_Secret
-        artifact "内容无关监控与日志收集\n(Prometheus Exporter + Fluentbit)" as Art_Obs
-    }
-
-    Art_Proxy --> Art_Sync : 本地回环 (127.0.0.1:8081 / HTTP)
-    Art_Proxy --> Art_AI : 本地回环 (127.0.0.1:8082 / HTTP)
-    
-    Art_Sync --> Art_DB_Data : TCP / 5432 (连接池, 原子事务)
-    Art_AI --> Art_DB_Data : TCP / 5432 (指标写入, 审计)
-    Art_Worker --> Art_DB_Data : TCP / 5432 (SELECT FOR UPDATE 抢占 lease)
-
-    Art_Secret ..> Art_Sync : 注入数据库密码与服务密钥
-    Art_Secret ..> Art_AI : 注入 OpenAI API Key
-    Art_Secret ..> Art_Worker : 注入执行凭据
-
-    Art_Sync ..> Art_Obs : 导出耗时、状态码、错误类型
-    Art_AI ..> Art_Obs : 导出 Token用量、时延、失败率
-    Art_Worker ..> Art_Obs : 导出任务排队、lease持有指标
+skinparam database {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 10
 }
 
-cloud "外部受控模型基础设施\n<<node>> OpenAI Cloud Platform" as Node_OpenAI #FFF3E0 {
-    artifact "Responses API Endpoint\n(gpt-5.4-mini-2026-03-17 候选模型)" as Art_OpenAI_API
+skinparam cloud {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 11
 }
 
-' 客户端到服务端通信
-Art_APK --> Art_Proxy : HTTPS (TCP 端口 443)\n[REST push/pull & REST/SSE 问答]
-Art_EXE --> Art_Proxy : HTTPS (TCP 端口 443)\n[REST push/pull & REST/SSE 问答]
+node "用户移动设备\n<<device>> Android 12+" as Node_Android #F1F8E9 {
+  artifact "IntelligentReader.apk\n<<artifact>>" as Art_APK
+  database "本地沙箱存储" as Store_Android #DCEDC8
+  Art_APK --> Store_Android
+}
 
-' 服务端到外部模型通信
-Art_AI --> Art_OpenAI_API : HTTPS (TCP 端口 443)\n[携带本次已授权证据包]
+node "用户桌面电脑\n<<device>> Windows 11" as Node_Windows #E1F5FE {
+  artifact "IntelligentReader.exe\n<<artifact>>" as Art_EXE
+  database "AppData 本地存储" as Store_Win #D1E8F8
+  Art_EXE --> Store_Win
+}
 
-note bottom of Node_Server
-  **候选与正式部署状态说明 (D-14, D-35, ADR-014, ADR-035):**
-  1. 当前状态为 **Proposed 候选部署图**。三个服务端逻辑单元（同步、AI、worker）在课程一期
-     允许同机单节点部署，以降低运维复杂度与课程验证成本。
-  2. 只有在完成干净环境部署验证、重启与备份恢复演练后，经项目负责人批准方可转为正式部署图。
-  3. 服务端绝对禁止持久化用户源文档文件与全文索引；PostgreSQL 只存储最小结构化元数据。
-end note
+node "云中立计算节点\n<<node>> Linux (Ubuntu 22.04 LTS)\n[课程一期单机一体化部署基线]" as Node_Server #EDE7F6 {
+  
+  node "反向代理网关\n<<executionEnvironment>> Ingress" as Env_Proxy {
+    artifact "Caddy / Nginx" as Art_Proxy
+  }
+
+  node "Java 21 运行时环境\n<<executionEnvironment>> App Runtime" as Env_AppRuntime {
+    artifact "sync-service.jar\n<<artifact>>" as Art_Sync
+    artifact "rag-gateway.jar\n<<artifact>>" as Art_AI
+    artifact "task-worker.jar\n<<artifact>>" as Art_Worker
+  }
+
+  node "数据库运行时环境\n<<executionEnvironment>> DB Runtime" as Env_DBRuntime {
+    database "PostgreSQL 16\n<<database system>>" as PG_Inst #D1C4E9
+  }
+
+  Art_Proxy --> Art_Sync : HTTP (8081)
+  Art_Proxy --> Art_AI : HTTP (8082)
+  Art_Sync --> PG_Inst : TCP (5432)
+  Art_AI --> PG_Inst : TCP (5432)
+  Art_Worker --> PG_Inst : TCP (5432)
+}
+
+cloud "外部受控模型基础设施\n<<node>> OpenAI Cloud" as Node_OpenAI #FFF3E0 {
+  artifact "Responses API Endpoint" as Art_OpenAI_API
+}
+
+Art_APK --> Art_Proxy : HTTPS (TCP 443)
+Art_EXE --> Art_Proxy : HTTPS (TCP 443)
+Art_AI --> Art_OpenAI_API : HTTPS (TCP 443)
 
 @enduml

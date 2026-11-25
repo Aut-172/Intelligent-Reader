@@ -1,66 +1,68 @@
 @startuml FLOW-07-文件撤权删除传播活动任务停止与残留清理时序图
-title 图 FLOW-07 时序图·文件撤权、删除传播、活动任务停止与残留清理时序图\n(关联：UC05 | 决策：D-05, D-19, D-20, D-26 | 质量场景：QA-29, QA-31 | ADR-019, ADR-020, ADR-026)
+title 图 FLOW-07 时序图·文件撤权、删除传播、活动任务停止与残留清理时序图
 autonumber
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam ParticipantPadding 10
+skinparam BoxPadding 10
 
-actor "个人用户" as User
-participant "客户端应用 A\n(主操作设备)" as ClientA
-control "BackgroundTaskRunner\n(后台任务调度器)" as TaskRunner
-database "LocalStorage & Cache\n(沙箱文件、索引与缓存)" as LocalStore
-participant "服务端同步单元\n(sync-service)" as Server
-database "PostgreSQL 数据库\n(同步与任务表)" as DB
-participant "对端客户端 B\n(同步目标设备)" as ClientB
+actor "用户" as User
+participant "客户端 A" as ClientA
+control "TaskRunner" as TaskRunner
+database "LocalStore" as LocalStore
+participant "服务端 sync-service" as Server
+database "PostgreSQL" as DB
+participant "客户端 B" as ClientB
 
-== 阶段 1：用户触发文件撤权或逻辑删除 (D-05, D-20) ==
+== 阶段 1：用户触发文件撤权或逻辑删除 ==
 
-User -> ClientA : 在界面上对某文档点击“撤销授权并移除”或“删除笔记”
-ClientA -> ClientA : 确认操作，阻断新的检索和模型问答请求
+User -> ClientA : 点击“撤销授权并移除”或“删除笔记”
+ClientA -> ClientA : 阻断新的检索和模型问答请求
 
-== 阶段 2：立即停止运行中任务与本地敏感残留清理 (D-26, QA-29) ==
+== 阶段 2：立即停止运行中任务与本地敏感残留清理 ==
 
 ClientA -> TaskRunner : cancelActiveTasksForDocument(docId)
-TaskRunner -> TaskRunner : 检查当前队列与线程池中是否存在该文档的解析/OCR/建索引任务
-TaskRunner -> TaskRunner : **立即发送中断信号 (Thread.interrupt / Coroutine.cancel)**\n强制终止所有相关正在执行的异步计算
-TaskRunner --> ClientA : 确认运行中任务已安全终止
+TaskRunner -> TaskRunner : 发送中断信号 (interrupt / Coroutine.cancel)
+TaskRunner --> ClientA : 确认运行中解析/OCR/建索引任务已安全终止
 
 ClientA -> LocalStore : purgeLocalArtifacts(docId)
-LocalStore -> LocalStore : 1. 删除本地页面位图缓存与 OCR 临时图像\n2. 从本地 SQLite 混合索引中删除对应 BM25 条目与向量记录\n3. 清理 SAF 持久 URI 授权释放句柄\n4. 将本地实体状态置为 DELETED
+LocalStore -> LocalStore : 1. 删除本地页面位图与 OCR 缓存
+LocalStore -> LocalStore : 2. 删除 BM25 条目与本地向量
+LocalStore -> LocalStore : 3. 释放 SAF 持久 URI / 文件句柄
+LocalStore -> LocalStore : 4. 状态标记为 DELETED
 LocalStore --> ClientA : 本地残留清理完毕
 
-== 阶段 3：生成 Tombstone 并推送服务端 (D-19, D-21) ==
+== 阶段 3：生成 Tombstone 并推送服务端 ==
 
-ClientA -> ClientA : 构建不可变删除操作 SyncOperation\n(operationId: UUID-Del-1, type: DELETE_DOCUMENT, isTombstone: true)
+ClientA -> ClientA : 构建不可变删除操作 SyncOperation (isTombstone: true)
 ClientA -> Server : HTTPS POST /api/v1/sync/push (UUID-Del-1, baseRev)
 
-Server -> DB : 开启 PostgreSQL 事务
-DB -> DB : 将资源标记为逻辑删除 (isDeleted=true)
-DB -> DB : 在 Tombstone 记录表中插入待传播墓碑：\n(entityId: docId, tombstoneCreatedAt: Now, expiresAt: Now + N_Days)
-DB -> DB : 向账号变更流追加 Tombstone 变更记录 (Rev-25)
-Server -> DB : 提交事务 (COMMIT)
-Server --> ClientA : HTTP 200 OK (confirmedRevision: 25)
+Server -> DB : BEGIN TRANSACTION
+DB -> DB : 标记逻辑删除 (isDeleted=true)
+DB -> DB : 插入待传播墓碑 Tombstones (entityId: docId, expiresAt: Now + N_Days)
+DB -> DB : 追加账号变更日志 (Rev-25)
+Server -> DB : COMMIT TRANSACTION
+Server --> ClientA : HTTP 200 OK (confirmedRev: 25)
 
-== 阶段 4：删除墓碑向对端客户端 B 传播并执行清理 (D-19 A) ==
+== 阶段 4：删除墓碑向客户端 B 传播并执行清理 ==
 
 ClientB -> Server : HTTPS GET /api/v1/sync/pull?cursor=cur_rev24
 Server --> ClientB : 返回 Rev-25 (Tombstone: docId 已删除)
 
-ClientB -> ClientB : 识别到 Tombstone 墓碑指令：\n**严禁任何静默复活操作！**
+ClientB -> ClientB : 识别 Tombstone (严禁静默复活)
 ClientB -> TaskRunner : cancelActiveTasksForDocument(docId)
 ClientB -> LocalStore : purgeLocalArtifacts(docId)
-ClientB -> ClientB : 界面立即刷新，下架该文档及其相关笔记，保存新游标 cur_rev25
-ClientB --> User : 对端设备完成静默清理，无任何数据残留
+ClientB -> ClientB : 刷新界面下架文档，保存新游标 cur_rev25
+ClientB --> User : 对端静默完成本地残留清理
 
-== 阶段 5：服务端到期异步硬删除与审计清理 (D-19, D-26) ==
+== 阶段 5：服务端到期异步硬删除与审计清理 ==
 
-note over Server, DB
-  经过预设保留窗口 (Tombstone 保留周期) 后，服务端任务 worker 触发定期清理例程。
-end note
-
-Server -> DB : SELECT * FROM Tombstones WHERE expiresAt < Now FOR UPDATE SKIP LOCKED
+Server -> DB : SELECT * FROM Tombstones WHERE expiresAt < Now
 DB --> Server : 返回已过期的墓碑记录集合
-Server -> DB : 物理清理：DELETE FROM UserNotes WHERE entityId IN (...)
-Server -> DB : 物理清理：DELETE FROM Tombstones WHERE expiresAt < Now
-DB --> Server : 异步硬删除完成，释放存储空间并写入内容无关审计日志
+Server -> DB : 物理清理 UserNotes 与 Tombstones
+DB --> Server : 异步硬删除完成，释放空间并记录脱敏审计日志
+
+note over ClientA, Server : 残留清理准则: 本地任务立即中断，多端墓碑传播且严禁静默复活 (D-19, D-26)
 
 @enduml

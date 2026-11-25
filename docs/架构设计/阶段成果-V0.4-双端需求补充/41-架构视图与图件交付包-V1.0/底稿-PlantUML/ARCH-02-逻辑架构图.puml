@@ -1,5 +1,5 @@
 @startuml ARCH-02-逻辑架构图
-title 图 ARCH-02 逻辑架构分层图（正式图 / 华为云 CodeArts Modeling 规范标准 5 层架构）
+title 图 ARCH-02 逻辑架构分层总览图（华为云 CodeArts Modeling 规范标准 5 层架构）
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
 skinparam roundCorner 6
@@ -21,12 +21,6 @@ skinparam component {
   ArrowThickness 1.2
 }
 
-skinparam interface {
-  BackgroundColor #FFE082
-  BorderColor #FF8F00
-  FontSize 10
-}
-
 skinparam database {
   BackgroundColor #FFFFFF
   BorderColor #37474F
@@ -39,129 +33,65 @@ skinparam cloud {
   FontSize 11
 }
 
-package "第 1 层：接入与展现层 (Presentation & Ingress Layer)" as L1 #EBF3FB {
-  package "Android 移动端表现" as L1_And {
-    component "ComposeReaderScreen\n<<boundary>>\n阅读器与选区视图" as UI_And_Reader
-    component "SAFFilePicker\n<<boundary>>\n持久授权文件选择" as UI_And_Picker
-  }
-  package "Windows 桌面端表现" as L1_Win {
-    component "WinDesktopReader\n<<boundary>>\n多窗口阅读工作台" as UI_Win_Reader
-    component "WinFilePicker\n<<boundary>>\n拖放与文件对话框" as UI_Win_Picker
-  }
-  package "服务端管理接入" as L1_Admin {
-    component "AdminCliEndpoint\n<<boundary>>\n受限诊断与指标观察" as UI_Admin
-  }
+package "第 1 层：接入与展现层 (Presentation Layer)" as L1 #EBF3FB {
+  component "AndroidComposeUI\n<<boundary>>" as UI_And
+  component "WindowsDesktopUI\n<<boundary>>" as UI_Win
+  component "AdminCliEndpoint\n<<boundary>>" as UI_Admin
 }
 
-package "第 2 层：应用编排与用例层 (Application & Orchestration Layer)" as L2 #EAF5EA {
-  package "客户端协调服务组件" as L2_Client {
-    component "DocImportCoordinator\n<<control>>\n文档导入与版本编排" as Coord_Import
-    component "LocalRetrievalCoordinator\n<<control>>\n混合检索与证据裁剪" as Coord_Retr
-    component "RAGInteractionCoordinator\n<<control>>\n流式问答与授权管理" as Coord_RAG
-    component "SyncQueueCoordinator\n<<control>>\n离线操作队列与推送" as Coord_Sync
-  }
-  package "服务端核心业务用例" as L2_Server {
-    component "AccountSessionService\n<<service>>\n身份认证与会话管理" as Srv_Auth
-    component "SyncTransactionService\n<<service>>\n变更流与原子同步事务" as Srv_Sync
-    component "EvidenceValidationService\n<<service>>\n证据包合同与长度校验" as Srv_AI
-    component "TaskRecoveryService\n<<service>>\nLease抢占与容错恢复" as Srv_Task
-  }
+package "第 2 层：应用编排与用例层 (Application Layer)" as L2 #EAF5EA {
+  component "ClientCoordinators\n<<control>>" as App_Client
+  component "ServerUseCases\n<<service>>" as App_Server
 }
 
 package "第 3 层：核心领域与合同层 (Domain & Contract Layer)" as L3 #FFF8E1 {
-  package "KMP 共享领域核心 (Candidate Shared Core)" as L3_Shared #FFF3E0 {
-    component "DocumentIdentity / Version\n<<entity>>\n文档不可变身份与版本模型" as Dom_Doc
-    component "CitationAnchor / StalePolicy\n<<entity>>\n字符/结构锚点与失效规则" as Dom_Cit
-    component "SyncOperation / StateMachine\n<<entity>>\n不可变操作流与冲突仲裁" as Dom_Sync
-  }
-  package "服务端领域模型与公共契约" as L3_Server #FFF3E0 {
-    component "AccountChangeLog / Session\n<<entity>>\n修订版本变更流与会话" as Dom_ChangeLog
-    component "EvidencePackageDTO / ErrorEnvelope\n<<contract>>\n脱敏证据包与统一错误契约" as Dom_DTO
-  }
-  interface "IDocumentParserPort" as Port_Parser
-  interface "ILocalStoragePort" as Port_Storage
-  interface "ISecureStorePort" as Port_Security
-  interface "IModelGatewayPort" as Port_Model
+  component "KMPSharedCore\n<<candidate domain>>" as Dom_Shared
+  component "ServerContracts\n<<contract>>" as Dom_Server
 }
 
-package "第 4 层：平台适配与驱动层 (Adaptation & Integration Layer)" as L4 #F3E8FD {
-  package "Android 专用适配器" as L4_And {
-    component "AndroidDocParserAdapter\n<<adapter>>\nPdfRenderer / OCR 移动适配" as Adp_And_Doc
-    component "AndroidKeystoreAdapter\n<<adapter>>\n硬件主密钥与凭据存储" as Adp_And_Key
-    component "AndroidRoomStorageAdapter\n<<adapter>>\n本地 SQLite / Room 驱动" as Adp_And_DB
-  }
-  package "Windows 专用适配器" as L4_Win {
-    component "WinDocParserAdapter\n<<adapter>>\nWindows.Data.Pdf / OCR 适配" as Adp_Win_Doc
-    component "WinCredentialAdapter\n<<adapter>>\nDPAPI 凭据安全存储" as Adp_Win_Key
-    component "WinSqliteStorageAdapter\n<<adapter>>\n桌面 SQLite 数据库驱动" as Adp_Win_DB
-  }
-  package "服务端与外部模型驱动" as L4_Server {
-    component "PostgresSyncRepoAdapter\n<<adapter>>\nPostgreSQL 事务与仓储" as Adp_PG_Sync
-    component "OpenAIModelAdapter\n<<adapter>>\nResponses API 与模型隔离" as Adp_OpenAI
-  }
+package "第 4 层：平台适配与驱动层 (Adaptation Layer)" as L4 #F3E8FD {
+  component "AndroidAdapters\n<<adapter>>" as Adp_And
+  component "WindowsAdapters\n<<adapter>>" as Adp_Win
+  component "ServerDrivers\n<<adapter>>" as Adp_Server
 }
 
-package "第 5 层：基础设施与数据层 (Infrastructure & Data Layer)" as L5 #F1F5F9 {
-  database "客户端本地沙箱\n(SQLite / 本地向量资产 / 私有文件)" as DB_Client
-  database "服务端关系持久化\n(PostgreSQL 16 关系数据库集群)" as DB_Server
-  cloud "外部受控模型端点\n(OpenAI API / HTTPS TLS1.3)" as Cloud_Ext
+package "第 5 层：基础设施与数据层 (Infrastructure Layer)" as L5 #F1F5F9 {
+  database "ClientSandboxStorage" as DB_Client
+  database "PostgreSQL 16" as DB_Server
+  cloud "OpenAI API" as Cloud_Ext
 }
 
-package "正交切面关注点 (Cross-Cutting Concerns)" as L_Cross #FDF2F2 {
-  component "PolicyGate\n<<cross-cutting>>\n权限与逐文件同意门控" as Cross_Policy
-  component "SyncRecoveryEngine\n<<cross-cutting>>\n离线同步故障恢复状态机" as Cross_Sync
-  component "AuditTelemetryLogger\n<<cross-cutting>>\n零正文内容脱敏审计流" as Cross_Audit
+package "正交切面关注点 (Cross-Cutting)" as L_Cross #FDF2F2 {
+  component "PolicyGate\n<<cross-cutting>>" as Cross_Policy
+  component "SyncRecoveryEngine\n<<cross-cutting>>" as Cross_Sync
+  component "AuditTelemetryLogger\n<<cross-cutting>>" as Cross_Audit
 }
 
-' 垂直层级约束 (强制从顶至底水平分层)
+' 垂直层级约束
 L1 -[hidden]down-> L2
 L2 -[hidden]down-> L3
 L3 -[hidden]down-> L4
 L4 -[hidden]down-> L5
 
-' 表现层 -> 编排层
-UI_And_Reader --> Coord_Import
-UI_And_Reader --> Coord_Retr
-UI_Win_Reader --> Coord_Import
-UI_Win_Reader --> Coord_Retr
-UI_Admin --> Srv_Task
+' 上下层调用依赖
+UI_And --> App_Client
+UI_Win --> App_Client
+UI_Admin --> App_Server
 
-' 编排层 -> 领域层 / 端口
-Coord_Import --> Dom_Doc
-Coord_Import --> Port_Parser
-Coord_Retr --> Dom_Cit
-Coord_RAG --> Port_Model
-Coord_Sync --> Dom_Sync
-Coord_Sync --> Port_Storage
-Coord_Sync --> Port_Security
+App_Client --> Dom_Shared
+App_Server --> Dom_Server
 
-Srv_Auth --> Dom_ChangeLog
-Srv_Sync --> Dom_ChangeLog
-Srv_AI --> Dom_DTO
+Adp_And .up.|> Dom_Shared : 依赖倒置实现
+Adp_Win .up.|> Dom_Shared : 依赖倒置实现
+App_Server --> Adp_Server
 
-' 适配层依赖倒置实现领域端口
-Adp_And_Doc .up.|> Port_Parser
-Adp_Win_Doc .up.|> Port_Parser
-Adp_And_DB .up.|> Port_Storage
-Adp_Win_DB .up.|> Port_Storage
-Adp_And_Key .up.|> Port_Security
-Adp_Win_Key .up.|> Port_Security
-Adp_OpenAI .up.|> Port_Model
+Adp_And --> DB_Client
+Adp_Win --> DB_Client
+Adp_Server --> DB_Server
+Adp_Server --> Cloud_Ext
 
-' 服务端编排 -> 仓储与适配器
-Srv_Sync --> Adp_PG_Sync
-Srv_Task --> Adp_PG_Sync
-Srv_AI --> Adp_OpenAI
-
-' 适配层 -> 基础设施层
-Adp_And_DB --> DB_Client
-Adp_Win_DB --> DB_Client
-Adp_PG_Sync --> DB_Server
-Adp_OpenAI --> Cloud_Ext
-
-' 正交切面依赖
-Cross_Policy ..> Coord_RAG : 校验单次证据授权
-Cross_Sync ..> Coord_Sync : 协调离线重试
-Cross_Audit ..> Srv_Sync : 记录无内容审计流水
+Cross_Policy ..> App_Client : 权限门控
+Cross_Sync ..> App_Client : 离线状态
+Cross_Audit ..> App_Server : 审计日志
 
 @enduml

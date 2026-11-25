@@ -1,0 +1,64 @@
+@startuml ARCH-01b-信任边界与数据隔离图
+title 图 ARCH-01b 信任边界与数据敏感度分级图（华为云 CodeArts Modeling 规范标准）
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam roundCorner 6
+skinparam linetype ortho
+
+skinparam package {
+  BackgroundColor transparent
+  BorderColor #546E7A
+  FontStyle bold
+  FontSize 11
+}
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 10
+  ArrowColor #1565C0
+}
+
+skinparam database {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 10
+}
+
+package "信任区 1: 客户端私有沙箱 [TB-1 完全信任区]" as Zone1 #F1F8E9 {
+  component "文档与解析适配器" as C_Parser
+  component "本地混合检索引擎" as C_Index
+  database "本地私有数据\n(源文档 / 页面图像 / 本地索引)" as DB_Client #DCEDC8
+  
+  C_Parser --> DB_Client
+  C_Index --> DB_Client
+}
+
+package "信任区 2: 服务端最小化安全区 [TB-2 受限信任区]" as Zone2 #EDE7F6 {
+  component "身份与同步服务" as S_Sync
+  component "AI / RAG 网关" as S_AI
+  database "服务端关系数据\n(不可逆哈希 / 增量变更 / 任务表)" as DB_Server #D1C4E9
+  
+  S_Sync --> DB_Server
+  S_AI --> DB_Server
+}
+
+package "信任区 3: 外部模型隔离区 [TB-3 非信任区]" as Zone3 #FFF3E0 {
+  component "ModelAdapter (隔离适配器)" as M_Adapter
+  component "OpenAI 候选模型快照" as M_LLM
+  
+  M_Adapter --> M_LLM
+}
+
+Zone1 ==>> Zone2 : [TB-2 边界: TLS 1.3]\n1. 结构化元数据 (push/pull)\n2. 单次授权最少证据包 (REST/SSE)
+Zone2 ==>> Zone3 : [TB-3 边界: 专网/HTTPS]\n单次脱敏短摘录 (绝无正文文件与路径)
+
+note bottom of Zone1
+  **核心原则**：源文档本体、全文索引、向量权重绝对留在端侧沙箱
+end note
+
+note bottom of Zone2
+  **核心原则**：服务端绝不持有源文件正文，日志遵循零内容脱敏
+end note
+
+@enduml

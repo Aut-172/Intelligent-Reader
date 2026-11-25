@@ -1,80 +1,80 @@
 @startuml FLOW-03-本地混合检索最少证据选择与AI问答引用核验
-title 图 FLOW-03 时序图·本地混合检索、最少证据选择、AI问答与引用核验\n(关联：UC03, UC04 | 决策：D-06, D-15, D-24, D-25, D-27, D-29 | 质量场景：QA-29, QA-30, QA-32, QA-34 | ADR-024, ADR-025, ADR-027, ADR-029)
+title 图 FLOW-03 时序图·本地混合检索、最少证据选择、AI问答与引用核验
 autonumber
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam ParticipantPadding 10
+skinparam BoxPadding 10
 
-actor "个人用户" as User
-boundary "ReaderUI\n(阅读与问答交互界面)" as UI
-control "LocalRetrievalCoordinator\n(本地检索与问答协调器)" as Coord
-control "LocalHybridIndexEngine\n(本地混合检索引擎)" as Indexer
-control "EvidenceTrimmer\n(权限过滤与最少证据裁剪器)" as Trimmer
-boundary "AIRAGGateway\n(服务端 AI/RAG 网关)" as Gateway
-control "ModelAdapter\n(供应商隔离适配器)" as Adapter
-participant "OpenAI 官方端点\n(Responses API / gpt-5.4-mini)" as Model
-control "CitationVerifier\n(客户端引用核验与双锚点绑定)" as Verifier
+actor "用户" as User
+boundary "ReaderUI" as UI
+control "RetrievalCoordinator" as Coord
+control "HybridIndexEngine" as Indexer
+control "EvidenceTrimmer" as Trimmer
+boundary "AIGateway" as Gateway
+control "ModelAdapter" as Adapter
+participant "OpenAI API" as Model
+control "CitationVerifier" as Verifier
 
-User -> UI : 在当前文档选区或全局输入问答：“总结第三章关于架构约束的要点”
+User -> UI : 输入问答：“总结第三章架构约束要点”
 UI -> Coord : initiateQuestion(queryText, activeDocIds)
 
-== 阶段 1：客户端权限过滤与逐文件同意校验 (D-24, QA-29) ==
+== 阶段 1：端侧权限过滤与逐文件同意校验 ==
 
 Coord -> Trimmer : checkUserConsent(activeDocIds)
-alt [用户尚未对某文档签署本次 AI 外发同意]
+alt 尚未签署本次 AI 外发同意
     Trimmer --> Coord : CONSENT_REQUIRED
-    Coord --> UI : 弹出隐私提示：“文档《设计说明》将提取少量片段用于AI分析，是否同意？”
+    Coord --> UI : 弹出隐私提示：“提取少量片段外发分析，是否同意？”
     User -> UI : 勾选同意并确认
     UI -> Coord : confirmConsent(activeDocIds, consentSignature)
 end
 
-== 阶段 2：客户端本地混合检索、重排与证据裁剪 (D-23, D-24) ==
+== 阶段 2：端侧本地混合检索与最少证据裁剪 ==
 
 Coord -> Indexer : executeHybridSearch(queryText, activeDocIds)
-Indexer -> Indexer : 1. 本地 BM25 关键词召回 Top-20 文本块
-Indexer -> Indexer : 2. 本地 Embedding 向量语义召回 Top-20 文本块
-Indexer -> Indexer : 3. 执行 RRF (倒数排名融合) 与相关性评分重排
-Indexer --> Coord : 返回 Top-5 综合候选块 (含原始文本与 BBox 坐标)
+Indexer -> Indexer : BM25 关键词召回 + 本地向量语义召回 (Top-20)
+Indexer -> Indexer : 执行 RRF (倒数排名融合) 重排
+Indexer --> Coord : 返回 Top-5 综合候选块 (含文本与 BBox)
 
 Coord -> Trimmer : trimToMinimalEvidence(candidates, maxTokens=1500)
-Trimmer -> Trimmer : 1. 去除无关上下文，提取最少必要段落/句子\n2. 剥离本地路径、用户身份及未经同意的文档信息\n3. 注入防篡改签名与 DocumentVersion 校验标识
-Trimmer --> Coord : 生成最小证据包 EvidencePackageDTO
+Trimmer -> Trimmer : 剥离路径/身份信息，生成 EvidencePackageDTO
+Trimmer --> Coord : 返回最少证据包 (防篡改签名 + docVersion)
 
-== 阶段 3：受控网关验证与流式模型调用 (D-15, D-27, D-29) ==
+== 阶段 3：受控网关验证与流式模型调用 ==
 
-Coord -> Gateway : HTTPS POST /api/v1/ai/query (EvidencePackage, QueryText)\n[TLS 1.3, 携带请求 ID 与用户令牌]
-Gateway -> Gateway : 1. 验证证据包格式与大小合法性 (拒绝超长/全篇文档)\n2. 检查用户调用频次与限流配额 (RateLimit)\n3. 记录内容无关结构化审计日志 (脱敏 queryId, token 预估)
+Coord -> Gateway : HTTPS POST /api/v1/ai/query (EvidencePackage, queryText)
+Gateway -> Gateway : 验证证据包大小合规性、频次限流、审计脱敏
+Gateway -> Adapter : callModelStream(evidence, queryText)
+Adapter -> Model : HTTPS POST /v1/chat/completions (要求结构化引用)
+Model --> Adapter : 200 OK SSE 增量数据流
+Adapter --> Gateway : 归一化流式事件
+Gateway --> Coord : 响应 HTTP 200 text/event-stream (SSE)
 
-Gateway -> Adapter : callModelStream(anonymizedEvidence, queryText)
-Adapter -> Model : HTTPS POST /v1/chat/completions (Responses API)\n[严格要求结构化 JSON / 标记输出与引用下标]
-
-Model --> Adapter : HTTP 200 chunked SSE 增量数据流
-Adapter --> Gateway : 归一化流式事件 (token, citationIndex)
-Gateway --> Coord : 响应 HTTP 200 text/event-stream (SSE 流)
-
-loop 持续接收流式 Token 与增量回答
-    Coord --> UI : 发送增量文字 (Streaming chunk)
-    UI --> User : 界面打字机式平滑呈现文字回答
+loop 持续接收流式 Token
+    Coord --> UI : 发送增量文字 (Stream chunk)
+    UI --> User : 打字机式呈现回答文字
 end
 
-alt [网络波动导致 SSE 断流 / 超时]
-    Gateway --> Coord : SSE 连接异常断开
-    Coord -> Coord : 禁止拼接模糊片段，立即触发降级策略
+alt 网络波动 SSE 断流
     Coord -> Gateway : HTTPS GET /api/v1/ai/result/{queryId} (轮询最终状态)
-    Gateway --> Coord : 返回完整的服务端最终固化回答 (或重试倒计时)
+    Gateway --> Coord : 返回完整固化回答
 end
 
-== 阶段 4：客户端引用白名单核验与双锚点绑定 (D-25, QA-30) ==
+== 阶段 4：客户端引用白名单核验与双锚点绑定 ==
 
-Model --> Adapter : 输出最终引用标记，如 [Ref: 1, 页面: 12]
+Model --> Adapter : 输出最终引用标记 [Ref: 1, Page: 12]
 Adapter --> Gateway : 传递引用标识
-Gateway --> Coord : SSE 发送 [DONE] 信号与最终结构化引用列表
+Gateway --> Coord : SSE 发送 [DONE] 信号与结构化引用列表
 
 Coord -> Verifier : verifyCitations(aiCitations, EvidencePackage)
-Verifier -> Verifier : 核验引用必须存在于本次外发的证据白名单中！\n(若模型幻觉捏造非白名单引用，直接剔除并告警)
-Verifier -> Verifier : 将通过核验的引用绑定客户端底层双锚点：\n1. 结构锚点 (SectionPath: 3.2节)\n2. 字符与物理锚点 (Page: 12, NormalizedRect: x,y,w,h)
+Verifier -> Verifier : 白名单核验 (剔除非外发证据的幻觉引用)
+Verifier -> Verifier : 绑定双锚点 (SectionPath + NormalizedRect)
+Verifier --> Coord : 返回已核验引用 VerifiedCitationList
 
-Verifier --> Coord : 返回已核验引用对象 VerifiedCitationList
-Coord --> UI : 渲染可交互的引用角标 [1]
-UI --> User : 生成式回答完毕，点击角标 [1] 可精准回跳原文档高亮区域
+Coord --> UI : 渲染可交互引用角标 [1]
+UI --> User : 回答完毕，点击角标 [1] 精准回跳原文档高亮区域
+
+note over Coord, Gateway : 隐私安全边界: 仅外发裁剪后的最小证据包，全篇文档禁止上云 (D-24, D-27)
 
 @enduml

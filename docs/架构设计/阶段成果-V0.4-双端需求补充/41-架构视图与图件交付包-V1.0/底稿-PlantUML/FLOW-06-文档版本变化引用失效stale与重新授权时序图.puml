@@ -1,69 +1,73 @@
 @startuml FLOW-06-文档版本变化引用失效stale与重新授权时序图
-title 图 FLOW-06 时序图·文档版本变化、引用失效(stale)与重新授权时序图\n(关联：UC02, UC04 | 决策：D-16, D-25 | 质量场景：QA-30 | ADR-016, ADR-025)
+title 图 FLOW-06 时序图·文档版本变化、引用失效(stale)与重新授权时序图
 autonumber
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam ParticipantPadding 10
+skinparam BoxPadding 10
 
-actor "个人用户" as User
-boundary "ReaderUI\n(阅读器与引用展示界面)" as UI
-control "DocumentCoordinator\n(文档生命周期协调器)" as DocCoord
-database "LocalStorage\n(本地版本元数据与引用库)" as Store
-control "CitationEngine\n(双锚点引用与 stale 判定引擎)" as CitEngine
-control "DocParserAdapter\n(平台文档解析适配器)" as Parser
+actor "用户" as User
+boundary "ReaderUI" as UI
+control "DocCoordinator" as DocCoord
+database "LocalStorage" as Store
+control "CitationEngine" as CitEngine
+control "DocParserAdapter" as Parser
 
 User -> UI : 打开本地文档《系统架构说明书.pdf》
 UI -> DocCoord : openDocument(contentUri / filePath)
 
-DocCoord -> DocCoord : 读取本地文件流，重新计算内容 SHA-256 精确哈希值\n得到当前文件哈希 CurrentHash
-
+DocCoord -> DocCoord : 计算当前内容 SHA-256 (CurrentHash)
 DocCoord -> Store : queryDocumentVersion(docId)
-Store --> DocCoord : 返回原有注册版本信息 (VersionId: V1, RecordedHash: Hash_Old)
+Store --> DocCoord : 返回原有注册版本 (V1, Hash_Old)
 
-DocCoord -> DocCoord : 对比哈希：CurrentHash != Hash_Old\n[判定触发：LIKELY_NEW_VERSION (D-16)]
+DocCoord -> DocCoord : 对比 CurrentHash != Hash_Old (触发 LIKELY_NEW_VERSION)
 
-== 阶段 1：建立新版本与引用保守失效 (D-16 A, D-25 A) ==
+== 阶段 1：建立新版本与引用保守失效 ==
 
-DocCoord -> Store : createNewVersion(docId, newVersionId: V2, CurrentHash, parentVersionId: V1)
+DocCoord -> Store : createNewVersion(docId, V2, CurrentHash, parentVer: V1)
 Store --> DocCoord : 新版本 V2 注册完成
 
-DocCoord -> CitEngine : evaluateCitationsOnVersionChange(docId, oldVer: V1, newVer: V2)
-CitEngine -> Store : 获取所有绑定在 V1 上的历史引用与高亮项 (CitationRefList)
+DocCoord -> CitEngine : evaluateCitationsOnVersionChange(docId, V1, V2)
+CitEngine -> Store : 获取 V1 上的历史引用与高亮列表
 
 loop 遍历所有旧引用
-    CitEngine -> CitEngine : **执行保守失效规则 (ADR-025, QA-30):**\n1. 内容改变后，禁止将旧结构/字符锚点静默漂移至新位置！\n2. 将该引用状态置为 isStale = true\n3. 记录失效原因: "STALE_REASON_CONTENT_MUTATED"
-    CitEngine -> Store : updateCitationStatus(refId, isStale=true, staleReason)
+    CitEngine -> CitEngine : 引用保守失效规则: 禁止锚点静默漂移，标记 isStale=true
+    CitEngine -> Store : updateCitationStatus(refId, isStale=true, STALE_REASON_CONTENT_MUTATED)
 end
 
-CitEngine --> DocCoord : 引用失效标记完成 (共 N 条引用变为 stale)
+CitEngine --> DocCoord : 引用失效标记完成 (共 N 条变为 stale)
 
 == 阶段 2：UI 呈现陈旧状态与用户告警 ==
 
 DocCoord --> UI : 返回文档载入成功，附带版本警告通知
-UI --> User : 界面顶部弹出黄色告警横幅：\n“检测到文档已更新为新版本 V2，既有引用锚点可能已失效，已标记为陈旧 (stale)”
+UI --> User : 弹出黄色横幅：“文档已更新为新版本 V2，既有引用已标记为陈旧 (stale)”
 
-User -> UI : 点击笔记列表中带有 [stale] 警示图标的旧引用
+User -> UI : 点击带有 [stale] 图标的旧引用
 UI -> CitEngine : inspectStaleCitation(refId)
-CitEngine --> UI : 返回该引用的历史快照文本、原页码及失效说明
-UI --> User : 呈现历史引用摘录，高亮提示：“该引用来自上一版本第 32 页，无法在新版本中自动对齐”
+CitEngine --> UI : 返回历史快照文本、原页码与失效说明
+UI --> User : 呈现历史引用摘录：“引用来自上一版本第 32 页”
 
 == 阶段 3：用户确认触发重新解析与重新对齐锚点 ==
 
 User -> UI : 点击“在新版本中重新搜索并重新锚定”
 UI -> DocCoord : triggerReanchoring(docId, V2, refId)
 
-DocCoord -> Parser : reparseDocument(contentUri, V2)
+DocCoord -> Parser : reparseDocument(uri, V2)
 Parser --> DocCoord : 返回新版页面文本块与新 NormalizedRect
 
 DocCoord -> CitEngine : rebindAnchor(refId, V2, originalTextSnippet)
-CitEngine -> CitEngine : 在新版解析文本中定位最接近的匹配段落 (需达到置信度阈值)
-alt [在新版中成功匹配到对应段落]
-    CitEngine -> Store : updateAnchor(refId, newVersionId: V2, newSectionPath, newRect, isStale=false)
+CitEngine -> CitEngine : 在新版文本中定位最接近匹配段落
+alt 成功匹配到对应段落
+    CitEngine -> Store : updateAnchor(refId, V2, newSectionPath, newRect, isStale=false)
     CitEngine --> DocCoord : 重新锚定成功
-    DocCoord --> UI : 刷新界面，[stale] 标记清除，恢复正常回跳高亮
-    UI --> User : 提示：“引用已成功重新绑定至新版本第 34 页！”
-else [新版已删除该段落或无法确定匹配]
+    DocCoord --> UI : 刷新界面，清除 [stale] 标记
+    UI --> User : 提示：“引用已成功重新绑定至新版本第 34 页”
+else 新版已删除对应段落
     CitEngine --> DocCoord : REBIND_FAILED
-    DocCoord --> UI : 提示：“未能自动对齐，建议手动选择新版文本重新添加笔记”
+    DocCoord --> UI : 提示：“未能自动对齐，建议手动选择新版文本”
 end
+
+note over DocCoord, CitEngine : 保守失效原则: 文档内容变化后严禁猜测静默漂移，必须显式标为 stale (D-16, D-25)
 
 @enduml

@@ -1,0 +1,84 @@
+@startuml ARCH-02b-端侧分层与KMP核心协作图
+title 图 ARCH-02b 端侧跨平台分层与共享核心协作图（六边形端口拆分视图）
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam roundCorner 6
+skinparam linetype ortho
+left to right direction
+
+skinparam package {
+  BackgroundColor transparent
+  BorderColor #546E7A
+  FontStyle bold
+  FontSize 11
+}
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 10
+  ArrowColor #1565C0
+}
+
+skinparam interface {
+  BackgroundColor #FFE082
+  BorderColor #FF8F00
+  FontSize 10
+}
+
+package "Android 移动端平台" as P_Android #F1F8E9 {
+  component "ComposeReaderUI\n<<boundary>>" as UI_And
+  component "AndroidDocParserAdapter\n<<adapter>>" as Adp_And_Doc
+  component "AndroidRoomStorageAdapter\n<<adapter>>" as Adp_And_Store
+  component "AndroidKeystoreAdapter\n<<adapter>>" as Adp_And_Sec
+  
+  UI_And --> Adp_And_Doc
+  UI_And --> Adp_And_Store
+}
+
+package "KMP 共享领域核心 (Candidate Core)" as P_Core #FFF8E1 {
+  
+  package "抽象端口 (Ports)" {
+    interface "IDocParserPort" as Port_Parser
+    interface "ILocalStoragePort" as Port_Store
+    interface "ISecureStorePort" as Port_Sec
+    interface "IModelGatewayPort" as Port_Net
+  }
+
+  package "纯业务规则与实体" {
+    component "DocumentIdentity\n<<entity>>" as Core_Doc
+    component "CitationAnchor\n<<entity>>" as Core_Cit
+    component "SyncStateMachine\n<<control>>" as Core_Sync
+  }
+
+  Core_Sync --> Port_Store
+  Core_Sync --> Port_Sec
+  Core_Doc --> Port_Parser
+}
+
+package "Windows 桌面端平台" as P_Windows #E1F5FE {
+  component "WinDesktopReaderUI\n<<boundary>>" as UI_Win
+  component "WinDocParserAdapter\n<<adapter>>" as Adp_Win_Doc
+  component "WinSqliteStorageAdapter\n<<adapter>>" as Adp_Win_Store
+  component "WinCredentialAdapter\n<<adapter>>" as Adp_Win_Sec
+  
+  UI_Win --> Adp_Win_Doc
+  UI_Win --> Adp_Win_Store
+}
+
+package "网络驱动" as P_Remote #F3E8FD {
+  component "KtorClientAdapter\n<<adapter>>" as Adp_Net
+}
+
+Adp_And_Doc ..|> Port_Parser
+Adp_Win_Doc ..|> Port_Parser
+
+Adp_And_Store ..|> Port_Store
+Adp_Win_Store ..|> Port_Store
+
+Adp_And_Sec ..|> Port_Sec
+Adp_Win_Sec ..|> Port_Sec
+
+Adp_Net ..|> Port_Net
+
+@enduml

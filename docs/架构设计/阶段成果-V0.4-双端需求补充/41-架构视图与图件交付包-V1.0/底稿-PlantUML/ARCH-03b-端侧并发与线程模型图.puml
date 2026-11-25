@@ -1,0 +1,54 @@
+@startuml ARCH-03b-端侧并发与线程模型图
+title 图 ARCH-03b 端侧多线程并发与进程内通信模型（华为云 CodeArts Modeling 规范标准）
+skinparam shadowing false
+skinparam defaultFontName Microsoft YaHei
+skinparam roundCorner 6
+skinparam linetype ortho
+
+skinparam package {
+  BackgroundColor transparent
+  BorderColor #546E7A
+  FontStyle bold
+  FontSize 11
+}
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 10
+  ArrowColor #1565C0
+}
+
+skinparam database {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 10
+}
+
+package "Android 端多线程与本地并发模型" as Env_Android #F1F8E9 {
+  component "Main UI 线程\n(Compose 交互与文档渲染)" as Th_And_UI
+  component "IO 协程池 (Dispatchers.IO)\n(文档解析 / OCR / 本地混合索引)" as Th_And_IO
+  component "WorkManager 后台线程\n(离线操作持久同步队列)" as Th_And_Worker
+  database "本地 SQLite / Room\n(WAL 模式并发事务)" as DB_And_Local #DCEDC8
+  component "系统守护进程: Keystore\n(硬件安全密钥)" as Daemon_Keystore #F5F5F5
+
+  Th_And_UI <--> Th_And_IO : StateFlow / Channel 通信
+  Th_And_IO <--> DB_And_Local : 本地函数调用 (WAL 读并发)
+  Th_And_Worker <--> DB_And_Local : 异步持久操作入队与消费
+  Th_And_UI ..> Daemon_Keystore : Android IPC (Binder 令牌存取)
+}
+
+package "Windows 端多线程与本地并发模型" as Env_Windows #E1F5FE {
+  component "UI 线程\n(WinUI3 消息循环与多窗口)" as Th_Win_UI
+  component "ThreadPool 工作线程\n(文档解析 / OCR / 本地混合索引)" as Th_Win_Tasks
+  component "TaskHost 持久任务线程\n(离线操作持久同步队列)" as Th_Win_Worker
+  database "本地 SQLite 数据库\n(WAL 模式并发事务)" as DB_Win_Local #D1E8F8
+  component "系统服务: LSASS / DPAPI\n(Windows 凭据保护)" as Daemon_DPAPI #F5F5F5
+
+  Th_Win_UI <--> Th_Win_Tasks : Task / Await 异步分发
+  Th_Win_Tasks <--> DB_Win_Local : 本地函数调用 (WAL 读并发)
+  Th_Win_Worker <--> DB_Win_Local : 异步持久操作入队与消费
+  Th_Win_UI ..> Daemon_DPAPI : Win32 API (CryptProtectData)
+}
+
+@enduml

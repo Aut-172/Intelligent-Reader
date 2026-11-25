@@ -1,56 +1,58 @@
 @startuml FLOW-04-双端阅读进度与笔记同步时序图
-title 图 FLOW-04 时序图·双端阅读进度与笔记同步时序图\n(关联：UC05 | 决策：D-04, D-17, D-21, D-30 | 质量场景：QA-31, QA-35 | ADR-017, ADR-021, ADR-030)
+title 图 FLOW-04 时序图·双端阅读进度与笔记同步时序图
 autonumber
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam ParticipantPadding 10
+skinparam BoxPadding 10
 
-actor "个人用户" as User
-participant "Android 客户端 A\n(移动端应用)" as ClientA
-participant "服务端同步单元\n(sync-service)" as Server
-database "PostgreSQL 数据库\n(同步当前态与变更流)" as DB
-participant "Windows 客户端 B\n(桌面端应用)" as ClientB
+actor "用户" as User
+participant "Android 客户端 A" as ClientA
+participant "服务端 sync-service" as Server
+database "PostgreSQL" as DB
+participant "Windows 客户端 B" as ClientB
 
-== 阶段 1：客户端 A 本地业务变更与不可变操作入队 (D-21) ==
+== 阶段 1：客户端 A 本地业务变更与操作入队 ==
 
-User -> ClientA : 在文档第 45 页做高亮笔记：“架构分层需要严格隔离”
-ClientA -> ClientA : 1. 本地数据库原子写入笔记实体 (NoteEntity)\n2. 创建不可变同步操作记录 (SyncOperation)\n   - operationId: UUID-101\n   - baseRevision: Rev-12\n   - payload: {docHash, page:45, noteText, rect}
-ClientA -> ClientA : 标记该操作为 PENDING_UPLOAD
+User -> ClientA : 在文档第 45 页添加高亮笔记
+ClientA -> ClientA : 本地原子写入 NoteEntity
+ClientA -> ClientA : 创建不可变同步操作 SyncOperation (opId=UUID-101, baseRev=12)
+ClientA -> ClientA : 标记为 PENDING_UPLOAD
 
-== 阶段 2：客户端 A 向服务端发起原子 Push (D-17, D-21, D-30) ==
+== 阶段 2：客户端 A 向服务端发起原子 Push ==
 
-ClientA -> Server : HTTPS POST /api/v1/sync/push\n(AuthToken, deviceSessionA, operationId=UUID-101, baseRevision=12, syncEpoch=1, operations)
-Server -> Server : 1. 验证用户身份合法性与 deviceSession 有效性\n2. 校验 payload 仅包含结构化数据 (绝无源文件本体)\n3. 检查 operationId 幂等表，防止重复请求产生二次副作用
+ClientA -> Server : HTTPS POST /api/v1/sync/push (AuthToken, opId, baseRev=12, ops)
+Server -> Server : 身份与会话校验、数据白名单检查、幂等去重检查
 
-Server -> DB : 开启单个 PostgreSQL 数据库事务 (BEGIN TRANSACTION)
-DB -> DB : 检查 baseRevision 是否合法，锁定账号行
+Server -> DB : BEGIN TRANSACTION
+DB -> DB : 锁定账号行，检查 baseRevision 有效性
 DB -> DB : 更新资源当前态 (INSERT/UPDATE UserNotes)
-DB -> DB : 记录幂等键 (INSERT INTO IdempotencyRecord VALUES (UUID-101))
-DB -> DB : 向账号变更日志追加记录：\nINSERT INTO AccountChangeLog VALUES (Rev-13, UUID-101, NotePayload)
-Server -> DB : 提交数据库事务 (COMMIT TRANSACTION)
-DB --> Server : 事务提交成功，生成全局递增新版本 Rev-13
+DB -> DB : 记录幂等键 (INSERT IdempotencyRecord)
+DB -> DB : 追加账号变更日志 (INSERT AccountChangeLog, Rev-13)
+Server -> DB : COMMIT TRANSACTION
+DB --> Server : 事务成功，生成新全局版本 Rev-13
 
-Server --> ClientA : HTTP 200 OK (status: SUCCESS, confirmedRevision: 13, newCursor: "cur_rev13_seq1")
-ClientA -> ClientA : 更新本地同步状态，标记 UUID-101 为 COMMITTED\n更新本地游标为 "cur_rev13_seq1"
+Server --> ClientA : HTTP 200 OK (confirmedRev: 13, newCursor: "cur_rev13_seq1")
+ClientA -> ClientA : 标记 UUID-101 为 COMMITTED，更新本地游标
 
-== 阶段 3：客户端 B 主动 Pull 拉取并幂等应用变更 (D-21, QA-35) ==
+== 阶段 3：客户端 B 主动 Pull 拉取并幂等应用 ==
 
-ClientB -> Server : HTTPS GET /api/v1/sync/pull?cursor=cur_rev12_seq0\n(AuthToken, deviceSessionB)
-Server -> DB : 查询 AccountChangeLog 中 cursor 之后的所有增量变更记录
-DB --> Server : 返回 Rev-13 的笔记变更数据与最新不透明游标 "cur_rev13_seq1"
+ClientB -> Server : HTTPS GET /api/v1/sync/pull?cursor=cur_rev12_seq0
+Server -> DB : 查询 AccountChangeLog 中 cursor 后的增量记录
+DB --> Server : 返回 Rev-13 变更数据与新游标
 
-alt [游标有效且在保留窗口内]
-    Server --> ClientB : HTTP 200 OK (changes: [Rev-13: NotePayload], nextCursor: "cur_rev13_seq1")
-    ClientB -> ClientB : 1. 检查本地是否已有该 operationId (幂等过滤)\n2. 应用笔记变更至本地 SQLite 数据库\n3. 关联本地已授权的同哈希原文档 (按 SHA-256 自动绑定)\n4. 保存新游标 "cur_rev13_seq1"
-    ClientB --> User : 界面桌面端静默同步完成，第 45 页出现对应高亮与笔记
-else [长期离线 / 游标失效超出服务端保留窗口]
-    Server --> ClientB : HTTP 409 Conflict (errorCode: "REBASE_REQUIRED")
-    ClientB -> ClientB : 触发 Rebase 流程：\n保留本地未上传的修改队列，重新拉取全量基线快照并合并
+alt 游标有效且在保留窗口内
+    Server --> ClientB : HTTP 200 OK (changes: [Rev-13], nextCursor: "cur_rev13_seq1")
+    ClientB -> ClientB : 1. operationId 幂等过滤
+    ClientB -> ClientB : 2. 写入本地 SQLite 并自动按 SHA-256 绑定本地原文档
+    ClientB -> ClientB : 3. 保存新游标
+    ClientB --> User : 桌面端静默同步完成，第 45 页出现对应高亮笔记
+else 长期离线导致游标失效
+    Server --> ClientB : HTTP 409 Conflict (REBASE_REQUIRED)
+    ClientB -> ClientB : 保留未上传队列，触发 Rebase 全量基线合并
 end
 
-note over ClientA, ClientB
-  **原子性与一致性边界原则 (D-21, D-30):**
-  1. 服务端所有写入必须在同一个 PostgreSQL 事务中完成（当前态更新 + 幂等固化 + 变更日志追加）。
-  2. 客户端崩溃后重新拉取完全幂等，游标更新晚于本地数据落盘，保证 At-least-once 且零丢失。
-end note
+note over ClientA, ClientB : 原子性原则: 服务端状态更新、幂等去重与变更日志在单一数据库事务中完成 (D-21)
 
 @enduml

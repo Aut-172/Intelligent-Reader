@@ -1,15 +1,13 @@
 @startuml ARCH-01-系统上下文与信任边界图
-title 图 ARCH-01 系统上下文与信任边界图（正式图 / 华为云 CodeArts Modeling 规范标准）
+title 图 ARCH-01 系统上下文总览图（华为云 CodeArts Modeling 规范标准）
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
 skinparam roundCorner 6
 skinparam linetype ortho
 
-skinparam package {
-  BackgroundColor transparent
-  BorderColor #546E7A
-  FontStyle bold
-  FontSize 12
+skinparam actor {
+  BackgroundColor #E1F5FE
+  BorderColor #0288D1
 }
 
 skinparam component {
@@ -20,103 +18,16 @@ skinparam component {
   ArrowThickness 1.2
 }
 
-skinparam database {
-  BackgroundColor #FFFFFF
-  BorderColor #37474F
-  FontSize 11
-}
+actor "个人用户\n(Personal User)" as User
+component "操作系统平台服务\n<<platform>>\n(Android 12+ / Win 11)" as OS #F5F5F5
+component "智能阅读器客户端\n<<subsystem>>\n(双端分立UI + 共享核心)" as Client #E8F5E9
+component "服务端基础服务\n<<subsystem>>\n(身份同步 / AI网关 / 任务审计)" as Server #EDE7F6
+component "外部受控大模型\n<<external system>>\n(OpenAI Responses API)" as Model #FFF3E0
 
-skinparam cloud {
-  BackgroundColor #FFFFFF
-  BorderColor #37474F
-  FontSize 11
-}
-
-actor "个人用户 (Reader)\n[单用户本地工作区]" as User #E1F5FE
-
-package "客户端受信任宿主环境 (Android 12+ / Windows 11)" as Env_Client #F1F8E9 {
-    
-    package "操作系统底层与安全服务" as OS_Services {
-        component "平台文件访问框架\n(Android SAF / Win Storage Access)" as OS_File
-        component "平台安全凭据库\n(Android Keystore / Win DPAPI)" as OS_Sec
-    }
-
-    package "智能阅读器客户端应用 (双端分立UI + KMP共享核心)" as ClientApp {
-        component "分端阅读器与交互壳\n(Compose / WinUI3)" as UI_Shell
-        component "分端文档处理与OCR适配器\n(PdfRenderer/Win.Pdf + OCR)" as Doc_Adapter
-        component "本地混合检索引擎\n(BM25/全文 + 中文 Embedding)" as Local_Retr
-        component "KMP 共享领域与同步核心\n(身份/版本/状态机)" as KMP_Core
-    }
-
-    database "客户端专有数据资产 [绝不离端]" as Local_Data #DCEDC8 {
-        folder "本地文件本体 (PDF/Office)" as Data_Files
-        folder "本地解析树、OCR结果与BBox" as Data_OCR
-        folder "本地全文索引与向量资产" as Data_Index
-    }
-
-    UI_Shell --> OS_File : 用户授权选择原文件
-    UI_Shell --> OS_Sec : 安全存取令牌/凭据
-    UI_Shell --> Doc_Adapter : 触发解析与渲染
-    Doc_Adapter --> Local_Data : 读写文件/缓存/OCR结果
-    Doc_Adapter --> Local_Retr : 提供统一归一化文档块
-    Local_Retr --> Data_Index : 读写混合索引
-    UI_Shell --> Local_Retr : 发起文档内关键词/语义检索
-    UI_Shell --> KMP_Core : 驱动进度、笔记与同步状态机
-}
-
-cloud "项目后端服务 (云中立基线 / 课程一期可同机)" as Env_Server #EDE7F6 {
-    
-    interface "HTTPS 443 (TLS 1.3)" as Edge_Ingress
-    
-    component "个人身份与同步服务\n(Auth & Sync Unit)\n[push/pull, revision, cursor]" as Svc_Sync
-    
-    component "AI / RAG 网关服务\n(AI/RAG Gateway)\n[证据包校验, 限流, SSE流]" as Svc_AI
-    
-    component "异步任务与审计服务\n(Task & Audit Worker)\n[PostgreSQL 任务表 lease 抢占]" as Svc_Worker
-
-    database "PostgreSQL 关系数据库\n(同步当前态 / 变更流 / 任务表)" as DB_Postgres #D1C4E9 {
-        folder "账号会话与设备记录" as Srv_Accounts
-        folder "不可逆哈希与文档元数据" as Srv_Meta
-        folder "同步进度、笔记与冲突副本" as Srv_SyncData
-        folder "游标变更流与任务审计表" as Srv_Ops
-    }
-
-    Edge_Ingress --> Svc_Sync : 身份验证与同步请求
-    Edge_Ingress --> Svc_AI : 证据包与 SSE 问答
-    Svc_Sync --> DB_Postgres : 单事务原子读写
-    Svc_Worker --> DB_Postgres : Lease 抢占任务与状态回写
-    Svc_AI --> DB_Postgres : 写入任务审计指标
-}
-
-cloud "外部受控模型供应商 (OpenAI 候选)" as Env_External #FFF3E0 {
-    component "ModelAdapter 隔离适配器" as Model_Adapter
-    component "gpt-5.4-mini 候选快照" as Ext_LLM
-    Model_Adapter --> Ext_LLM : HTTPS Responses API
-}
-
-' 跨边界连接与数据流约束
-User --> UI_Shell : 本地阅读、笔记、发起问答
-User ..> OS_File : 授权选取文件
-
-' 信任边界 TB-1: 客户端沙箱边界
-ClientApp ..> Local_Data : [TB-1 沙箱隔离] 严禁文档本体与索引外发
-
-' 信任边界 TB-2: 端云通信边界
-ClientApp --> Edge_Ingress : [TB-2 TLS 1.3 网络边界]\n1. REST push/pull (令牌, Operation, 游标)\n2. REST/SSE (已授权最少证据包)
-
-' 信任边界 TB-3: 外部供应商隔离边界
-Svc_AI --> Model_Adapter : [TB-3 供应商隔离]\n单次脱敏证据，绝无原文件与路径
-
-note bottom of Local_Data
-  **数据隐私红线 (D-01, D-05, D-17, D-23):**
-  1. 文档本体、全文索引、向量索引绝对留在客户端本地私有沙箱！
-  2. 服务端与外部模型绝不持有任何文档源文件与本地绝对路径。
-end note
-
-note bottom of DB_Postgres
-  **服务端数据最小化准则 (D-17, D-19, D-30):**
-  1. 服务端仅持有文档不可逆 SHA-256 哈希、阅读进度、笔记与冲突副本。
-  2. 审计与遥测严格遵循内容无关策略，严禁记录任何正文。
-end note
+User --> Client : 本地阅读、笔记、发起问答
+User ..> OS : 系统级文件授权
+Client --> OS : 访问沙箱文件与硬件凭据
+Client --> Server : HTTPS (REST同步 / 授权最少证据流)
+Server --> Model : HTTPS (单次Prompt + 裁剪证据)
 
 @enduml
