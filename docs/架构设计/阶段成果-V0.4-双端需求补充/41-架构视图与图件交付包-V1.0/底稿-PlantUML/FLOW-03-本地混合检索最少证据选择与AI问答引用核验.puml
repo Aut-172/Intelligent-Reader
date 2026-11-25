@@ -11,7 +11,7 @@ control "LocalHybridIndexEngine\n(本地混合检索引擎)" as Indexer
 control "EvidenceTrimmer\n(权限过滤与最少证据裁剪器)" as Trimmer
 boundary "AIRAGGateway\n(服务端 AI/RAG 网关)" as Gateway
 control "ModelAdapter\n(供应商隔离适配器)" as Adapter
-cloud "OpenAI 官方端点\n(Responses API / gpt-5.4-mini)" as Model
+participant "OpenAI 官方端点\n(Responses API / gpt-5.4-mini)" as Model
 control "CitationVerifier\n(客户端引用核验与双锚点绑定)" as Verifier
 
 User -> UI : 在当前文档选区或全局输入问答：“总结第三章关于架构约束的要点”

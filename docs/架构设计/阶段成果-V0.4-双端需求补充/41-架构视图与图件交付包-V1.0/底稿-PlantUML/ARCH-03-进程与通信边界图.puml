@@ -1,104 +1,124 @@
 @startuml ARCH-03-进程与通信边界图
-title 图 ARCH-03 进程与通信边界图（正式图 / UML 进程通信与并发构件图）
+title 图 ARCH-03 进程与通信边界图（正式图 / 华为云 CodeArts Modeling 规范标准）
 skinparam shadowing false
 skinparam defaultFontName Microsoft YaHei
-skinparam roundCorner 8
+skinparam roundCorner 6
 skinparam linetype ortho
 
-package "Android 操作系统运行环境" as Host_Android #F1F8E9 {
-    node "进程: com.reader.android (独立应用沙箱)" as Proc_Android {
-        component "Main UI 线程\n(Compose 交互与文档渲染)" as Th_And_UI
-        component "异步协程池 / IO 线程\n(PDF 解析、OCR 与本地混合索引)" as Th_And_IO
-        component "WorkManager 线程\n(持久任务、同步队列调度)" as Th_And_Worker
-        database "SQLite/Room 本地库\n(Operation 队列与本地索引)" as DB_And_Local
-        
-        Th_And_UI <--> Th_And_IO : 线程间通道 (Kotlin StateFlow/Channel)
-        Th_And_IO <--> DB_And_Local : 本地直接函数调用 / WAL 事务
-        Th_And_Worker <--> DB_And_Local : 异步持久操作存取
-    }
-    node "系统守护进程: Keystore Daemon" as Daemon_Keystore {
-        component "硬件凭据服务" as Keystore_Svc
-    }
-    Th_And_UI ..> Keystore_Svc : Android IPC (Binder)\n安全获取/存取令牌
+skinparam package {
+  BackgroundColor transparent
+  BorderColor #546E7A
+  FontStyle bold
+  FontSize 12
 }
 
-package "Windows 11 操作系统运行环境" as Host_Windows #E1F5FE {
-    node "进程: IntelligentReader.exe (桌面应用进程)" as Proc_Windows {
-        component "UI 线程\n(消息循环与多窗口阅读视图)" as Th_Win_UI
-        component "ThreadPool 工作线程\n(PDF 解析、OCR 与本地混合索引)" as Th_Win_Tasks
-        component "TaskHost 持久任务线程\n(同步队列与后台维护)" as Th_Win_Worker
-        database "SQLite 本地库\n(Operation 队列与本地索引)" as DB_Win_Local
+skinparam node {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 11
+  ArrowColor #1565C0
+  ArrowThickness 1.2
+}
+
+skinparam component {
+  BackgroundColor #FAFAFA
+  BorderColor #455A64
+  FontSize 10
+}
+
+skinparam database {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+  FontSize 10
+}
+
+package "Android 12+ 宿主环境" as Host_Android #F1F8E9 {
+    node "进程: com.reader.android (独立应用沙箱)" as Proc_Android {
+        component "Main UI 线程 (Compose)" as Th_And_UI
+        component "IO 协程池 (解析/OCR/混合索引)" as Th_And_IO
+        component "WorkManager 线程 (离线持久同步)" as Th_And_Worker
+        database "SQLite/Room 本地库" as DB_And_Local
         
-        Th_Win_UI <--> Th_Win_Tasks : 任务分发与异步回调 (Task/Await)
-        Th_Win_Tasks <--> DB_Win_Local : 本地直接调用 / WAL 事务
+        Th_And_UI <--> Th_And_IO : StateFlow / Channel
+        Th_And_IO <--> DB_And_Local : 本地函数调用 / WAL事务
+        Th_And_Worker <--> DB_And_Local : 异步持久操作存取
+    }
+    node "系统进程: Keystore Daemon" as Daemon_Keystore {
+        component "硬件凭据服务" as Keystore_Svc
+    }
+    Th_And_UI ..> Keystore_Svc : Android IPC (Binder)
+}
+
+package "Windows 11 宿主环境" as Host_Windows #E1F5FE {
+    node "进程: IntelligentReader.exe (桌面应用进程)" as Proc_Windows {
+        component "UI 线程 (WinUI3 / 消息循环)" as Th_Win_UI
+        component "ThreadPool 工作线程 (解析/OCR/索引)" as Th_Win_Tasks
+        component "TaskHost 持久任务线程 (离线同步)" as Th_Win_Worker
+        database "SQLite 本地库" as DB_Win_Local
+        
+        Th_Win_UI <--> Th_Win_Tasks : Task / Await 回调
+        Th_Win_Tasks <--> DB_Win_Local : 本地函数调用 / WAL事务
         Th_Win_Worker <--> DB_Win_Local : 异步持久操作存取
     }
     node "系统服务: LSASS / DPAPI" as Daemon_DPAPI {
-        component "Windows Credential Manager" as DPAPI_Svc
+        component "Windows 凭据管理器" as DPAPI_Svc
     }
-    Th_Win_UI ..> DPAPI_Svc : Windows API (CryptProtectData)\n安全读写用户凭据
+    Th_Win_UI ..> DPAPI_Svc : Win32 API (CryptProtectData)
 }
 
 cloud "端云网络边界 (Internet / TLS 1.3)" as Cloud_Net #ECEFF1
 
-package "课程一期服务端主机 (可同机部署多个独立进程)" as Host_Server #EDE7F6 {
+package "课程一期服务端节点 (可同机部署多个独立进程)" as Host_Server #EDE7F6 {
     
-    node "进程: HTTPS Ingress / 边缘代理" as Proc_Ingress {
-        component "TLS 终结、请求限流与路由分发" as Ingress_Router
+    node "进程: ingress-proxy (反向代理网关)" as Proc_Ingress {
+        component "TLS 终结与路由分发" as Ingress_Router
     }
 
     node "进程: sync-service (身份与同步单元)" as Proc_Sync {
-        component "REST API 接入端点" as Sync_Endpoint
-        component "SyncStateMachine (事务协调与冲突判定)" as Sync_SM
-        Sync_Endpoint --> Sync_SM : 进程内调用
+        component "REST 端点 & 事务状态机" as Sync_SM
     }
 
     node "进程: rag-gateway (AI/RAG 网关单元)" as Proc_AI {
-        component "AI 请求验证与证据包审计" as AI_Validator
-        component "SSE 增量流推送与轮询回退控制器" as AI_StreamController
-        component "ModelAdapter (供应商隔离适配)" as AI_Adapter
-        AI_Validator --> AI_StreamController : 内部调用
-        AI_StreamController --> AI_Adapter : 调用适配器
+        component "证据校验 & SSE 流控制器" as AI_StreamController
+        component "ModelAdapter (模型适配器)" as AI_Adapter
+        AI_StreamController --> AI_Adapter : 进程内调用
     }
 
     node "进程: task-worker (后台任务与审计单元)" as Proc_Worker {
-        component "TaskLeaseManager (基于 DB lease 抢占)" as Worker_Lease
-        component "IdempotentExecutor (幂等执行器与异常重试)" as Worker_Exec
-        Worker_Lease --> Worker_Exec : 触发任务
+        component "TaskLeaseManager (DB Lease 抢占)" as Worker_Lease
     }
 
-    node "进程: postgresql (PostgreSQL 关系型数据库集群)" as Proc_Postgres {
-        database "PostgreSQL 引擎\n[同步当前态 / 变更流 / 任务表]" as PG_Engine
+    node "进程: postgresql (PostgreSQL 16 数据库)" as Proc_Postgres {
+        database "PostgreSQL 引擎\n[当前态/变更流/任务表]" as PG_Engine
     }
 
-    Ingress_Router --> Sync_Endpoint : 本地 Unix Socket / HTTP 转发
-    Ingress_Router --> AI_Validator : 本地 Unix Socket / HTTP 转发
-    Sync_SM --> PG_Engine : TCP / libpq 协议\n单事务更新状态并追加变更记录
-    AI_Validator --> PG_Engine : TCP / libpq 记录请求指标与审计
-    Worker_Lease --> PG_Engine : TCP / libpq 协议\nSELECT FOR UPDATE SKIP LOCKED 抢占 lease
+    Ingress_Router --> Sync_SM : Unix Domain Socket / HTTP
+    Ingress_Router --> AI_StreamController : Unix Domain Socket / HTTP
+    Sync_SM --> PG_Engine : TCP / libpq (原子单事务)
+    AI_StreamController --> PG_Engine : TCP / libpq (记录审计指标)
+    Worker_Lease --> PG_Engine : TCP / libpq (SELECT FOR UPDATE)
 }
 
 cloud "外部受控模型供应商" as Ext_Vendor #FFF3E0 {
     node "api.openai.com (OpenAI 官方端点)" as Remote_OpenAI {
-        component "Responses API 服务\n(gpt-5.4-mini-2026-03-17 候选快照)" as Ext_Model_Svc
+        component "Responses API 服务\n(gpt-5.4-mini 候选快照)" as Ext_Model_Svc
     }
 }
 
-' 客户端到服务端网络连接
-Th_And_Worker --> Ingress_Router : HTTPS REST/JSON push/pull\n(operationId, baseRevision, 不透明 cursor)
-Th_Win_Worker --> Ingress_Router : HTTPS REST/JSON push/pull\n(operationId, baseRevision, 不透明 cursor)
+' 客户端到服务端通信
+Th_And_Worker --> Ingress_Router : HTTPS REST/JSON push/pull (游标增量同步)
+Th_Win_Worker --> Ingress_Router : HTTPS REST/JSON push/pull (游标增量同步)
 
-Th_And_IO --> Ingress_Router : HTTPS REST/JSON + SSE\n(仅授权最少证据包, 支持断流取消与轮询)
-Th_Win_Tasks --> Ingress_Router : HTTPS REST/JSON + SSE\n(仅授权最少证据包, 支持断流取消与轮询)
+Th_And_IO --> Ingress_Router : HTTPS REST/SSE (单次裁剪证据包流式问答)
+Th_Win_Tasks --> Ingress_Router : HTTPS REST/SSE (单次裁剪证据包流式问答)
 
-' AI 网关到外部供应商网络连接
-AI_Adapter --> Ext_Model_Svc : HTTPS REST/JSON Responses API\n(单次 Prompt + 证据片段, 结构化输出)
+' AI 网关到外部模型通信
+AI_Adapter --> Ext_Model_Svc : HTTPS Responses API (单次 Prompt + 授权短摘录)
 
 note top of Cloud_Net
-  **通信与错误隔离协议语义 (D-21, D-26, D-27):**
-  1. 同步协议：基于 push/pull 与不透明游标，游标过期返回 REBASE_REQUIRED，客户端保留未确认本地修改。
-  2. AI 问答：优先使用 SSE 流式增量响应；若网络中断/断流，禁止拼接模糊片段，立即降级为基于请求 ID 的轮询回退。
-  3. 服务端任务：通过 PostgreSQL lease 机制保证至多一个 worker 持有任务，worker 崩溃后 lease 超时自动回收。
+  **通信与错误隔离协议契约 (D-21, D-26, D-27):**
+  1. 同步协议：REST push/pull + 不透明游标。游标过期返回 REBASE_REQUIRED，客户端保留本地未确认修改。
+  2. 流式问答：优先使用 SSE 增量推送；网络断流时绝不拼接模糊片段，立即降级为轮询回退。
 end note
 
 @enduml
